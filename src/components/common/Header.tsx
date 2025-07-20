@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/context/AuthContext";
 
 // --- SVG Icons ---
 const HamburgerIcon = ({ ...props }) => (
@@ -48,8 +48,8 @@ const SignOutIcon = ({ ...props }) => (
 export default function AppNavbar() {
   const router = useRouter();
   const supabase = createClient();
-  const { user } = useAuth(); // ดึงข้อมูล user มาใช้ถ้าต้องการ
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const { user } = useAuth(); // ดึงข้อมูล user มาใช้ถ้าต้องการ
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
