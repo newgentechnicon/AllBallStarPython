@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ixvdyiiquxklpjmzzkpz.supabase.co', // นี่คือ Hostname จาก Error ของคุณ
         port: '',
-        pathname: '/storage/v1/object/public/farm-logos/**', // อนุญาตทุกไฟล์ใน bucket นี้
+        pathname: '/storage/v1/object/public/**', // อนุญาตทุกไฟล์ใน bucket นี้
       },
     ],
   },
