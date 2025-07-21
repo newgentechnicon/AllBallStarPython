@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import type { ProductWithFarmAndMorphs } from "./page"; // Import type จากหน้าหลัก
+import type { Product } from '@/types/Product';
 import Link from "next/link";
 
 type MorphProp = {
@@ -94,7 +94,7 @@ const MorphTag = ({ morph }: { morph: MorphProp }) => {
 export default function ProductDetailView({
   product,
 }: {
-  product: ProductWithFarmAndMorphs;
+  product: Product;
 }) {
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
