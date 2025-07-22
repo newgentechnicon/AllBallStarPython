@@ -3,7 +3,6 @@
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import type { CreateFarmState, EditFarmState } from './farm.types';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB

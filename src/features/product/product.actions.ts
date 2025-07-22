@@ -57,3 +57,46 @@ export async function deleteProductAction(productId: number) {
   revalidatePath('/products');
   return { success: true, message: 'ลบสินค้าสำเร็จ' };
 }
+
+export async function updateProductStatus(productId: number, newStatus: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabase
+    .from('products')
+    .update({ status: newStatus })
+    .eq('id', productId)
+    .eq('user_id', user.id); // ควรเช็ค user_id เพื่อความปลอดภัย
+    
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/farm/products');
+  return { success: true, message: 'Status updated successfully.' };
+}
+
+export async function softDeleteProduct(productId: number) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabase
+    .from('products')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', productId)
+    .eq('user_id', user.id); // ควรเช็ค user_id เพื่อความปลอดภัย
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/farm/products');
+  return { success: true, message: 'Product deleted successfully.' };
+}
+

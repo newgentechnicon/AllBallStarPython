@@ -2,6 +2,7 @@ import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { ProductsPageData, ProductWithMorphs } from './product.types';
+import { log } from 'console';
 
 /**
  * ดึงข้อมูลทั้งหมดที่จำเป็นสำหรับหน้าแสดงรายการสินค้า
@@ -9,66 +10,80 @@ import type { ProductsPageData, ProductWithMorphs } from './product.types';
  * @returns Promise<ProductsPageData> ข้อมูลสำหรับแสดงผล
  */
 export async function getProductsPageData(
-  searchParams: { [key: string]: string | string[] | undefined }
+  params: { page: string | string[]; q: string | string[]; status: string | string[] }
 ): Promise<ProductsPageData> {
   const supabase = await createClient();
 
+
+  // 1. ตรวจสอบ User และ Farm
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
   const { data: farm, error: farmError } = await supabase.from('farms').select('*').eq('user_id', user.id).single();
   if (farmError || !farm) redirect('/farm/create');
 
-  const getFirstParam = (param: string | string[] | undefined): string =>
-    Array.isArray(param) ? param[0] || '' : param || '';
-
-  const currentPage = Number(getFirstParam(searchParams.page)) || 1;
-  const currentQuery = getFirstParam(searchParams.q);
-  const currentStatus = getFirstParam(searchParams.status) || 'All';
+  // 2. จัดการ Search Parameters
+  const currentPage = Number(Array.isArray(params.page) ? params.page[0] : params.page);
+  const currentQuery = Array.isArray(params.q) ? params.q[0] : params.q;
+  const currentStatus = Array.isArray(params.status) ? params.status[0] : params.status;
   const ITEMS_PER_PAGE = 10;
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
-  const baseCountQuery = (status?: string) => {
-    let query = supabase.from('products')
+  // 3. ดึงข้อมูล "จำนวน" สำหรับ Tabs (ส่วนนี้ทำงานถูกต้องอยู่แล้ว)
+  const fetchCount = async (status?: 'Available' | 'On Hold') => {
+    let query = supabase
+      .from('products')
       .select('id', { count: 'exact', head: true })
       .eq('farm_id', farm.id)
       .is('deleted_at', null);
-    if (status && status !== 'All') { // ปรับเงื่อนไข
-      query = query.eq('status', status);
-    }
-    return query;
+    if (status) query = query.eq('status', status);
+    const { count } = await query;
+    return count || 0;
   };
-  
-  let productsDataQuery = supabase
-    .from('products')
-    .select(`*, product_morphs(morphs(*))`) // Query morphs ทั้งหมด
-    .eq('farm_id', farm.id)
-    .is('deleted_at', null);
-
-  if (currentQuery) productsDataQuery = productsDataQuery.ilike('name', `%${currentQuery}%`);
-  if (currentStatus !== 'All') productsDataQuery = productsDataQuery.eq('status', currentStatus);
-
-  const [
-    allResult,
-    availableResult,
-    onHoldResult,
-    productsResult
-  ] = await Promise.all([
-    baseCountQuery('All'),
-    baseCountQuery('Available'),
-    baseCountQuery('On Hold'),
-    productsDataQuery.order('created_at', { ascending: false }).range(from, to)
+  const [allCount, availableCount, onHoldCount] = await Promise.all([
+    fetchCount(),
+    fetchCount('Available'),
+    fetchCount('On Hold'),
   ]);
+  const statusCounts = { All: allCount, Available: availableCount, 'On Hold': onHoldCount };
+
+  // ✅ 4. [แก้ไข] สร้าง Query สำหรับดึง "ข้อมูลหลัก" ใหม่ทั้งหมด
+  
+  // เริ่มจาก base query
+  let query = supabase
+    .from('products')
+    .select('*, product_morphs(morphs(*))', { count: 'exact' });
+
+  // ใส่ Filter ที่ต้องมีเสมอ
+  query = query.eq('farm_id', farm.id);
+  query = query.is('deleted_at', null);
+
+  // ใส่ Filter ตามเงื่อนไข (Search)
+  if (currentQuery) {
+    query = query.ilike('name', `%${currentQuery}%`);
+  }
+
+  // ใส่ Filter ตามเงื่อนไข (Status) - จุดสำคัญ
+  if (currentStatus !== 'All') {
+    query = query.eq('status', currentStatus);
+  }
+
+  console.log('status:', currentStatus);
+
+  // สั่งเรียงข้อมูล, แบ่งหน้า, และดึงข้อมูลสุดท้าย
+  const { data, error, count: totalCount } = await query
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    console.error('Product data fetch error:', error);
+  }
 
   return {
     farm,
-    products: (productsResult.data as ProductWithMorphs[]) || [],
-    totalCount: productsResult.count || 0,
-    statusCounts: {
-      All: allResult.count || 0,
-      Available: availableResult.count || 0,
-      'On Hold': onHoldResult.count || 0,
-    },
+    products: (data as ProductWithMorphs[]) || [],
+    totalCount: totalCount || 0,
+    statusCounts,
   };
 }
