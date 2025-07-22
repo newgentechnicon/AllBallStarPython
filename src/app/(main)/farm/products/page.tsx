@@ -6,14 +6,14 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 type FarmProductsPageProps = {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function FarmProductsPage({ searchParams }: FarmProductsPageProps) {
-  
-  const currentPage = searchParams['page'] ?? '1';
-  const currentQuery = searchParams['q'] ?? '';
-  const currentStatus = searchParams['productStatus'] ?? 'All';
+
+  const currentPage = (await searchParams)['page'] ?? '1';
+  const currentQuery = (await searchParams)['q'] ?? '';
+  const currentStatus = (await searchParams)['productStatus'] ?? 'All';
 
   console.log('currentStatus:', currentStatus);
 
