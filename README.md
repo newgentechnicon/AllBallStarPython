@@ -24,7 +24,7 @@ my-next-supabase-app/
 ├── package.json
 ├── tsconfig.json
 └── /src
-    └── ├── /app/           # 📂 ROUTING & CONTROLLERS
+    ├── /app/           # 📂 ROUTING & CONTROLLERS
     │   ├── /(auth)/
     │   │   └── /login/
     │   │       └── page.tsx
@@ -36,8 +36,8 @@ my-next-supabase-app/
     │   │   │   │   └── page.tsx
     │   │   │   ├── /edit/
     │   │   │   │   └── page.tsx
-    │   │   │   └── page.tsx
-    │   │   ├── /products/
+    │   │   │   ├── /products/
+    │   │   │   │   └── page.tsx
     │   │   │   └── page.tsx
     │   │   └── layout.tsx
     │   └── layout.tsx
@@ -52,15 +52,11 @@ my-next-supabase-app/
     │   │   └── auth.types.ts
     │   ├── /farm/
     │   │   ├── components/
-    │   │   │   ├── create-farm-view.tsx
-    │   │   │   ├── edit-farm-view.tsx
-    │   │   │   ├── farm-display.tsx
-    │   │   │   ├── farm-toast-handler.tsx
-    │   │   │   └── farm-view.tsx
     │   │   ├── farm.actions.ts
     │   │   ├── farm.services.ts
     │   │   └── farm.types.ts
     │   └── /product/
+    │       ├── components/
     │       ├── product.actions.ts
     │       ├── product.services.ts
     │       └── product.types.ts
