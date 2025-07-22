@@ -16,56 +16,66 @@
 
 โครงสร้างของโปรเจกต์ถูกออกแบบมาเพื่อแบ่งแยกหน้าที่ (Separation of Concerns) อย่างชัดเจน:
 
+```
 my-next-supabase-app/
 ├── .env.local              # 🔑 เก็บข้อมูลลับ, API Keys
 ├── .env.example            # 📄 ตัวอย่าง .env สำหรับทีม
 ├── next.config.mjs
 ├── package.json
 ├── tsconfig.json
-└── /src/
-    ├── /app/                   # 📂 ROUTING & CONTROLLERS
-    │   ├── /(auth)/            #   กลุ่มหน้าสำหรับผู้ที่ยังไม่ล็อกอิน
+└── /src
+    └── ├── /app/           # 📂 ROUTING & CONTROLLERS
+    │   ├── /(auth)/
     │   │   └── /login/
-    │   │       └── page.tsx      #   Controller ของหน้า Login
-    │   ├── /(main)/            #   กลุ่มหน้าหลักของแอป
+    │   │       └── page.tsx
+    │   ├── /(main)/
     │   │   ├── /dashboard/
     │   │   │   └── page.tsx
     │   │   ├── /farm/
+    │   │   │   ├── /create/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── /edit/
+    │   │   │   │   └── page.tsx
     │   │   │   └── page.tsx
     │   │   ├── /products/
     │   │   │   └── page.tsx
-    │   │   └── layout.tsx        #   Layout สำหรับกลุ่ม (main)
-    │   └── layout.tsx            #   Root Layout หลักของทุกหน้า
+    │   │   └── layout.tsx
+    │   └── layout.tsx
     │
-    ├── /components/            # 📂 SHARED UI
-    │   └── /ui/                  #   UI เล็กๆ (Button, Input, icons.tsx)
+    ├── /components/    # 📂 SHARED UI
+    │   └── /ui/
     │
-    ├── /features/              # ⭐ BUSINESS LOGIC
+    ├── /features/      # ⭐ BUSINESS LOGIC
     │   ├── /auth/
-    │   │   ├── /components/
-    │   │   │   └── login-view.tsx  #   🎨 View: UI ของหน้า Login
-    │   │   ├── auth.actions.ts   #   ⚙️ Logic: Server Action (login)
-    │   │   └── auth.types.ts     #   📝 Types: Type เฉพาะของ Auth
+    │   │   ├── components/
+    │   │   ├── auth.actions.ts
+    │   │   └── auth.types.ts
     │   ├── /farm/
-    │   │   ├── farm.actions.ts   #   ⚙️ Logic: Server Action (updateFarm)
-    │   │   ├── farm.services.ts  #   📦 Data: ฟังก์ชันคุยกับ DB
-    │   │   └── farm.types.ts     #   📝 Types: Type เฉพาะของ Farm
+    │   │   ├── components/
+    │   │   │   ├── create-farm-view.tsx
+    │   │   │   ├── edit-farm-view.tsx
+    │   │   │   ├── farm-display.tsx
+    │   │   │   ├── farm-toast-handler.tsx
+    │   │   │   └── farm-view.tsx
+    │   │   ├── farm.actions.ts
+    │   │   ├── farm.services.ts
+    │   │   └── farm.types.ts
     │   └── /product/
-    │       ├── product.actions.ts  #   ⚙️ Logic: Server Action (create, delete)
-    │       ├── product.services.ts #   📦 Data: ฟังก์ชันคุยกับ DB
-    │       └── product.types.ts    #   📝 Types: Type เฉพาะของ Product
+    │       ├── product.actions.ts
+    │       ├── product.services.ts
+    │       └── product.types.ts
     │
-    ├── /lib/                   # 📂 LOW-LEVEL HELPERS
-    │   ├── /supabase/            #   จัดการ Supabase Client
-    │   │   ├── client.ts
-    │   │   ├── server.ts
-    │   │   └── middleware.ts
-    │   └── /utils.ts             #   ฟังก์ชันช่วยเหลือทั่วไป
+    ├── /hooks/         # 📂 GLOBAL HOOKS
+    │   └── useAppToast.ts
     │
-    ├── /types/                 # 📂 GLOBAL TYPES
-    │   └── database.types.ts     #   🔥 Type อัตโนมัติจาก Supabase
+    ├── /lib/           # 📂 LOW-LEVEL HELPERS
+    │   └── /supabase/
     │
-    └── middleware.ts           # 🛡️ MIDDLEWARE (จัดการ Session)
+    ├── /types/         # 📂 GLOBAL TYPES
+    │   └── database.types.ts
+    │
+    └── middleware.ts   # 🛡️ MIDDLEWARE
+```
 
 - **`/app`**: จัดการเรื่อง Routing และทำหน้าที่เป็น Controller ที่คอยประสานงานระหว่าง Service และ View
 - **`/features`**: หัวใจหลักของแอปพลิเคชัน โค้ดที่เกี่ยวกับ Business Logic ทั้งหมดจะถูกแบ่งตามฟีเจอร์ (เช่น `auth`, `farm`, `product`)
