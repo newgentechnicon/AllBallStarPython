@@ -4,11 +4,11 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { StatusDropdown } from "./StatusDropdown";
-import { softDeleteProduct } from "@/app/(SidebarLayout)/farm/products/actions";
-import { useAppToast } from "@/hooks/useAppToast";
-import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
-import type { Product } from "@/types/Product"; // แก้ไข path ตามที่คุณเก็บ type
+import type { Product } from "@/types/Product";
 import type { Farm } from "@/lib/data/farm";
+import { softDeleteProduct } from "@/app/(SidebarLayout)/farm/products/actions";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
 
 // ประกาศ global type สำหรับ Preline (HSOverlay)
 declare global {
@@ -36,8 +36,8 @@ const MaleIcon = () => (
     strokeLinejoin="round"
     className="h-4 w-4 text-blue-500"
   >
-    {" "}
-    <circle cx="12" cy="10" r="4" /> <path d="M12 14v7m-3-3h6" />{" "}
+    <circle cx="12" cy="10" r="4" />
+    <path d="M12 14v7m-3-3h6" />
   </svg>
 );
 const FemaleIcon = () => (
@@ -53,8 +53,8 @@ const FemaleIcon = () => (
     strokeLinejoin="round"
     className="h-4 w-4 text-pink-500"
   >
-    {" "}
-    <circle cx="10" cy="7" r="4" /> <path d="M10 11v10m-3-3h6" />{" "}
+    <circle cx="10" cy="7" r="4" />
+    <path d="M10 11v10m-3-3h6" />
   </svg>
 );
 const ViewIcon = () => (
@@ -65,19 +65,18 @@ const ViewIcon = () => (
     viewBox="0 0 24 24"
     stroke="currentColor"
   >
-    {" "}
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-    />{" "}
+    />
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
       d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
-    />{" "}
+    />
   </svg>
 );
 const DeleteIcon = () => (
@@ -88,13 +87,12 @@ const DeleteIcon = () => (
     viewBox="0 0 24 24"
     stroke="currentColor"
   >
-    {" "}
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
       d="M19 7L5 7M10 11v6M14 11v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"
-    />{" "}
+    />
   </svg>
 );
 
@@ -111,26 +109,32 @@ const SexDisplay = ({ sex }: { sex: string | null }) => {
 export const ProductTable = ({
   products,
   farm,
+  onStatusUpdated,
 }: {
   products: Product[];
   farm: Farm;
+  onStatusUpdated?: () => void;
 }) => {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isPending, startTransition] = useTransition();
-  const { showSuccessToast, showErrorToast } = useAppToast();
 
   const handleConfirmDelete = () => {
     if (!productToDelete) return;
 
     startTransition(async () => {
       const result = await softDeleteProduct(productToDelete.id);
-
-      if (result.success && result.message) {
-        showSuccessToast(result.message);
-      } else if (result.error) {
-        showErrorToast(result.error);
+      if (result.success) {
+        Toastify({
+          text: "Product deleted successfully.",
+          style: { background: "#14B8A6", borderRadius: "8px" },
+        }).showToast();
+      } else {
+        Toastify({
+          text: `Error: ${result.error}`,
+          style: { background: "#EF4444", borderRadius: "8px" },
+        }).showToast();
       }
-
+      // Close the modal programmatically
       if (window.HSOverlay) {
         window.HSOverlay.close("#delete-product-modal");
       }
@@ -206,6 +210,11 @@ export const ProductTable = ({
                             <div className="font-medium text-gray-900">
                               {product.name}
                             </div>
+                            {/* <div className="text-gray-500 text-xs">
+                              {product.product_morphs
+                                .map((pm) => pm.morphs.name)
+                                .join(" ")}
+                            </div> */}
                           </div>
                         </div>
                       </td>
@@ -213,6 +222,7 @@ export const ProductTable = ({
                         <StatusDropdown
                           productId={product.id}
                           currentStatus={product.status}
+                          onStatusUpdated={onStatusUpdated}
                         />
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{`GK-${farm.id}-${product.id}`}</td>
@@ -248,26 +258,53 @@ export const ProductTable = ({
           </div>
         </div>
       </div>
-
-      <ConfirmationModal
+{/* Preline Modal for Delete Confirmation */}
+      <div
         id="delete-product-modal"
-        title="Delete Product"
-        onConfirm={handleConfirmDelete}
-        confirmText="Delete"
-        confirmButtonClass="bg-red-600 hover:bg-red-700"
-        isPending={isPending}
+        className="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto"
       >
-        <p className="text-gray-600">
-          Are you sure you want to delete <br />
-          <span className="font-semibold">
-            &quot;{productToDelete?.name}&quot;
-          </span>{" "}
-          product?
-        </p>
-        <p className="mt-1 text-sm text-gray-500">
-          This action could not be undone.
-        </p>
-      </ConfirmationModal>
+        <div className="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div className="p-4 sm:p-7">
+              <div className="text-center">
+                <h2 className="block text-xl font-bold text-gray-800">
+                  Delete Product
+                </h2>
+                <div className="mt-4">
+                  <p className="text-gray-600">
+                    Are you sure you want to delete <br />
+                    <span className="font-semibold">
+                      &quot;{productToDelete?.name}&quot;
+                    </span>{" "}
+                    product?
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    This action could not be undone.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-8 grid grid-cols-2 gap-x-4">
+                <button
+                  type="button"
+                  className="py-2.5 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50"
+                  data-hs-overlay="#delete-product-modal"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="py-2.5 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                  onClick={handleConfirmDelete}
+                  disabled={isPending}
+                >
+                  {isPending ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </>
   );
 };
