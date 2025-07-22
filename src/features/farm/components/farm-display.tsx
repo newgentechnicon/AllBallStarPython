@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { UserIcon } from '@/components/ui/icons'; // สมมติว่าย้าย UserIcon ไปไว้ที่เดียวกับไอคอนอื่น
-import type { Farm } from '@/lib/data/farm';
+import { UserIcon } from '@/components/ui/icons';
+import type { Farm } from '@/features/farm/farm.types'; // 👈 อัปเดต path การ import
 
 interface FarmDisplayProps {
   farm: Farm;
@@ -10,7 +10,6 @@ interface FarmDisplayProps {
 export function FarmDisplay({ farm }: FarmDisplayProps) {
   return (
     <div className="w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg dark:bg-gray-800">
-      {/* Farm Logo */}
       <div className="relative w-full" style={{ aspectRatio: '1 / 1' }}>
         {farm.logo_url ? (
           <Image src={farm.logo_url} alt={`${farm.name} logo`} layout="fill" className="object-cover" priority />
@@ -21,7 +20,6 @@ export function FarmDisplay({ farm }: FarmDisplayProps) {
         )}
       </div>
 
-      {/* Farm Details */}
       <div className="p-6 text-center">
         <h2 className="text-2xl font-bold uppercase text-gray-800 dark:text-white">{farm.name}</h2>
         <p className="mt-1 text-gray-600 dark:text-gray-400">{farm.breeder_name}</p>
@@ -31,7 +29,6 @@ export function FarmDisplay({ farm }: FarmDisplayProps) {
           <span className="text-sm font-medium">0</span>
         </div>
 
-        {/* Action Buttons */}
         <div className="mt-6 grid grid-cols-2 gap-4">
           <Link href="/farm/edit" className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
             Edit Farm

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { StatusDropdown } from "./StatusDropdown";
 import type { Product } from "@/types/Product";
 import type { Farm } from "@/lib/data/farm";
-import { softDeleteProduct } from "@/app/(SidebarLayout)/farm/products/actions";
+import { softDeleteProduct } from "@/app/(main)/farm/products/actions";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 

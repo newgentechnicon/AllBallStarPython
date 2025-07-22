@@ -1,4 +1,4 @@
-// src/app/(SidebarLayout)/farm/create/page.tsx
+// src/app/(main)/farm/create/page.tsx
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { CreateFarmForm } from './_components/CreateFarmForm';
