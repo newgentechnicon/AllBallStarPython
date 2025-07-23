@@ -119,3 +119,17 @@ export async function getProductById(productId: number): Promise<ProductDetail |
 
   return product as ProductDetail;
 }
+
+/**
+ * Fetches all morphs, structured by category and sub-category.
+ * @returns {Promise<any>} Structured morph data.
+ */
+export async function getStructuredMorphs() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('get_morphs_structured');
+  if (error) {
+    console.error("Error fetching structured morphs:", error);
+    return [];
+  }
+  return data;
+}

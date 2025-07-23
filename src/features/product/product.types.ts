@@ -27,3 +27,35 @@ export type ProductDetail = Tables<'products'> & {
     }) | null;
   }>;
 };
+
+// Type for the create product form state
+export interface CreateProductState {
+  success?: boolean;
+  message?: string;
+  errors: {
+    name?: string[];
+    price?: string[];
+    sex?: string[];
+    year?: string[];
+    description?: string[];
+    morphs?: string[];
+    images?: string[];
+    _form?: string; 
+  };
+  fields?: { [key: string]: FormDataEntryValue | string[] };
+}
+
+// Type for the edit product form state
+export interface EditProductState {
+  success?: boolean;
+  message?: string;
+  errors: {
+    name?: string[];
+    price?: string[];
+    // ... other fields
+    _form?: string; 
+  };
+  fields?: Partial<ProductDetail> & {
+      morphs?: string[];
+  };
+}
