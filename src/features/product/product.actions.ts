@@ -27,8 +27,15 @@ const productSchema = z.object({
   ),
 });
 
-const editProductSchema = productSchema.extend({
-    id: z.coerce.number(),
+const editProductSchema = z.object({
+  id: z.coerce.number(),
+  name: z.string().min(1, 'Name is required.'),
+  price: z.preprocess((val) => (val === "" ? null : Number(val)), z.number({ error: "Price must be a number." }).positive("Price must be positive.").nullable()),
+  sex: z.string().min(1, 'Sex is required.'),
+  year: z.string().min(1, 'Year is required.'),
+  description: z.string().min(1, 'Description is required.'),
+  morphs: z.preprocess((val) => (Array.isArray(val) ? val : [val]), z.array(z.string()).min(1, "At least one morph is required.")),
+  existingImageUrls: z.preprocess((val) => (typeof val === 'string' && val ? val.split(',') : []), z.array(z.string()).optional())
 });
 
 
@@ -160,53 +167,60 @@ export async function createProductAction(prevState: CreateProductState, formDat
   redirect('/farm/products');
 }
 
-/**
- * Updates an existing product.
- */
 export async function updateProductAction(prevState: EditProductState, formData: FormData): Promise<EditProductState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { errors: { _form: "Authentication required." } };
+
   const validatedFields = editProductSchema.safeParse({
     id: formData.get('id'),
     name: formData.get('name'),
     price: formData.get('price'),
     sex: formData.get('sex'),
+    year: formData.get('year'),
     description: formData.get('description'),
     morphs: formData.getAll('morphs'),
+    existingImageUrls: formData.get('existingImageUrls'),
   });
-  
+
   if (!validatedFields.success) {
-    return { errors: validatedFields.error.flatten().fieldErrors };
+    return { errors: validatedFields.error.flatten().fieldErrors, fields: Object.fromEntries(formData.entries()) };
   }
 
-  const { id, morphs, ...productData } = validatedFields.data;
-  const supabase = await createClient();
+  const { id, morphs, existingImageUrls, ...productData } = validatedFields.data;
+  const newImageFiles = formData.getAll('newImages') as File[];
 
   try {
+    const uploadedImageUrls: string[] = [];
+    for (const imageFile of newImageFiles) {
+      if (imageFile.size > 0) {
+        const filePath = `${user.id}/${id}/${Date.now()}_${imageFile.name}`;
+        const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, imageFile);
+        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(filePath);
+        uploadedImageUrls.push(publicUrl);
+      }
+    }
+    
+    const finalImageUrls = [...(existingImageUrls || []), ...uploadedImageUrls];
+    
     const { error: productUpdateError } = await supabase
       .from('products')
-      .update(productData)
+      .update({ ...productData, image_urls: finalImageUrls })
       .eq('id', id);
     if (productUpdateError) throw productUpdateError;
 
-    const { error: deleteError } = await supabase
-      .from('product_morphs')
-      .delete()
-      .eq('product_id', id);
+    const { error: deleteError } = await supabase.from('product_morphs').delete().eq('product_id', id);
     if (deleteError) throw deleteError;
 
-    if (morphs && morphs.length > 0) {
-      const newMorphLinks = morphs.map(morphId => ({
-        product_id: id,
-        morph_id: Number(morphId),
-      }));
-      const { error: insertError } = await supabase.from('product_morphs').insert(newMorphLinks);
-      if (insertError) throw insertError;
-    }
+    const newMorphLinks = morphs.map(morphId => ({ product_id: id, morph_id: Number(morphId) }));
+    const { error: insertError } = await supabase.from('product_morphs').insert(newMorphLinks);
+    if (insertError) throw insertError;
 
   } catch (error: any) {
-    return { errors: { _form: error.message || 'An unexpected error occurred.' } };
+    return { errors: { _form: error.message }, fields: Object.fromEntries(formData.entries()) };
   }
 
-  revalidatePath(`/farm/products/edit/${id}`);
   revalidatePath(`/farm/products/${id}`);
-  return { success: true, message: 'Product updated successfully!', errors: {} };
+  redirect(`/farm/products/${id}`);
 }

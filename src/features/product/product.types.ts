@@ -52,7 +52,11 @@ export interface EditProductState {
   errors: {
     name?: string[];
     price?: string[];
-    // ... other fields
+    sex?: string[];
+    year?: string[];
+    description?: string[];
+    morphs?: string[];
+    images?: string[];
     _form?: string; 
   };
   fields?: Partial<ProductDetail> & {
