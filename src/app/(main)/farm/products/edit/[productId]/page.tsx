@@ -3,14 +3,13 @@ import { getProductById, getStructuredMorphs } from '@/features/product/product.
 import { EditProductView } from '@/features/product/components/edit-product-view';
 
 type EditProductPageProps = {
-  params: { productId: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ productId: string }>;
 };
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
-  const productId = Number(params.productId);
+  const productId = Number((await params).productId);
   if (isNaN(productId)) {
     notFound();
   }

@@ -158,9 +158,9 @@ export async function createProductAction(prevState: CreateProductState, formDat
     const { error: morphsInsertError } = await supabase.from('product_morphs').insert(newMorphLinks);
     if (morphsInsertError) throw morphsInsertError;
     
-  } catch (error: any) {
-    // ✅ 5. ตรวจสอบให้แน่ใจว่าส่ง _form error กลับไปเสมอ
-    return { errors: { _form: error.message }, fields: Object.fromEntries(formData.entries()) };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { errors: { _form: message }, fields: Object.fromEntries(formData.entries()) };
   }
   
   revalidatePath('/farm/products');
@@ -217,8 +217,9 @@ export async function updateProductAction(prevState: EditProductState, formData:
     const { error: insertError } = await supabase.from('product_morphs').insert(newMorphLinks);
     if (insertError) throw insertError;
 
-  } catch (error: any) {
-    return { errors: { _form: error.message }, fields: Object.fromEntries(formData.entries()) };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { errors: { _form: message }, fields: Object.fromEntries(formData.entries()) };
   }
 
   revalidatePath(`/farm/products/${id}`);

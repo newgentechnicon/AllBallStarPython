@@ -3,7 +3,12 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
-const SearchIcon = ({ ...props }) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg> );
+const SearchIcon = ({ ...props }) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+);
 
 export function SearchBox() {
   const router = useRouter();
@@ -11,15 +16,13 @@ export function SearchBox() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const [inputValue, setInputValue] = useState(initialQuery);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
     if (initialQuery) {
-        setInputValue(initialQuery);
+      setInputValue(initialQuery);
     }
-  }, [initialQuery, searchParams]);
-
+  }, [initialQuery]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -29,11 +32,11 @@ export function SearchBox() {
       } else {
         params.delete('q');
       }
-      params.set('page', '1'); // Reset to first page on new search
+      params.set('page', '1');
       startTransition(() => {
         router.replace(`${pathname}?${params.toString()}`);
       });
-    }, 500); // Debounce time
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [inputValue, pathname, router, searchParams]);
