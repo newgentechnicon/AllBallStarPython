@@ -2,7 +2,7 @@ import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { Farm } from './farm';
-import type { Product } from '@/types/Product';
+import type { Product } from '@/types/Product'; // แก้ไข path ตามที่คุณเก็บ type
 
 export interface ProductsPageData {
   farm: Farm;
@@ -29,9 +29,6 @@ export async function getProductsPageData(
     return param || '';
   };
 
-  
-
-  // --- Fetch Counts and Products Concurrently ---
   const currentPage = Number(getFirstParam(searchParams.page)) || 1;
   const currentQuery = getFirstParam(searchParams.q);
   const currentStatus = getFirstParam(searchParams.status) || 'All';
@@ -40,7 +37,7 @@ export async function getProductsPageData(
   const to = from + ITEMS_PER_PAGE - 1;
 
   // Base query for reuse
-  const baseQuery = (status?: string) => {
+  const baseCountQuery = (status?: string) => {
     let query = supabase.from('products')
       .select('id', { count: 'exact', head: true })
       .eq('farm_id', farm.id)
@@ -52,14 +49,14 @@ export async function getProductsPageData(
   };
   
   // Main products query
-  let productsQuery = supabase
+  let productsDataQuery = supabase
     .from('products')
     .select(`*, product_morphs(morphs(name))`, { count: 'exact' })
     .eq('farm_id', farm.id)
     .is('deleted_at', null);
 
-  if (currentQuery) productsQuery = productsQuery.ilike('name', `%${currentQuery}%`);
-  if (currentStatus !== 'All') productsQuery = productsQuery.eq('status', currentStatus);
+  if (currentQuery) productsDataQuery = productsDataQuery.ilike('name', `%${currentQuery}%`);
+  if (currentStatus !== 'All') productsDataQuery = productsDataQuery.eq('status', currentStatus);
 
   const [
     allResult,
@@ -67,10 +64,10 @@ export async function getProductsPageData(
     onHoldResult,
     productsResult
   ] = await Promise.all([
-    baseQuery(),
-    baseQuery('Available'),
-    baseQuery('On Hold'),
-    productsQuery.order('created_at', { ascending: false }).range(from, to)
+    baseCountQuery(),
+    baseCountQuery('Available'),
+    baseCountQuery('On Hold'),
+    productsDataQuery.order('created_at', { ascending: false }).range(from, to)
   ]);
 
   const statusCounts = {

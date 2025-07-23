@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My Next.js & Supabase Project
 
-## Getting Started
+โปรเจกต์นี้เป็นเว็บแอปพลิเคชันที่สร้างด้วย **Next.js (App Router)** และใช้ **Supabase** เป็น Backend แบบครบวงจร (ฐานข้อมูล, Authentication, และ Storage) โดยใช้สถาปัตยกรรมแบบ **Feature-Sliced Design** เพื่อให้โค้ดมีความเป็นระเบียบสูง ง่ายต่อการบำรุงรักษา และรองรับการขยายตัวในอนาคต
 
-First, run the development server:
+## ✨ Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework**: [Next.js](https://nextjs.org/) 14+ (App Router)
+- **Backend & Database**: [Supabase](https://supabase.io/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Preline](https://preline.co/)
+- **Architecture**: Feature-Sliced Design
+- **Data Mutations**: Server Actions
+- **Type Safety**: TypeScript และ Type ที่สร้างจากฐานข้อมูลโดยตรง
+
+## 📂 Folder Structure
+
+โครงสร้างของโปรเจกต์ถูกออกแบบมาเพื่อแบ่งแยกหน้าที่ (Separation of Concerns) อย่างชัดเจน:
+
+```
+my-next-supabase-app/
+├── .env.local              # 🔑 เก็บข้อมูลลับ, API Keys
+├── .env.example            # 📄 ตัวอย่าง .env สำหรับทีม
+├── next.config.mjs
+├── package.json
+├── tsconfig.json
+└── /src
+    ├── /app/           # 📂 ROUTING & CONTROLLERS
+    │   ├── /(auth)/
+    │   │   └── /login/
+    │   │       └── page.tsx
+    │   ├── /(main)/
+    │   │   ├── /dashboard/
+    │   │   │   └── page.tsx
+    │   │   ├── /farm/
+    │   │   │   ├── /create/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── /edit/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── /products/
+    │   │   │   │   └── page.tsx
+    │   │   │   └── page.tsx
+    │   │   └── layout.tsx
+    │   └── layout.tsx
+    │
+    ├── /components/    # 📂 SHARED UI
+    │   └── /ui/
+    │
+    ├── /features/      # ⭐ BUSINESS LOGIC
+    │   ├── /auth/
+    │   │   ├── components/
+    │   │   ├── auth.actions.ts
+    │   │   └── auth.types.ts
+    │   ├── /farm/
+    │   │   ├── components/
+    │   │   ├── farm.actions.ts
+    │   │   ├── farm.services.ts
+    │   │   └── farm.types.ts
+    │   └── /product/
+    │       ├── components/
+    │       ├── product.actions.ts
+    │       ├── product.services.ts
+    │       └── product.types.ts
+    │
+    ├── /hooks/         # 📂 GLOBAL HOOKS
+    │   └── useAppToast.ts
+    │
+    ├── /lib/           # 📂 LOW-LEVEL HELPERS
+    │   └── /supabase/
+    │
+    ├── /types/         # 📂 GLOBAL TYPES
+    │   └── database.types.ts
+    │
+    └── middleware.ts   # 🛡️ MIDDLEWARE
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **`/app`**: จัดการเรื่อง Routing และทำหน้าที่เป็น Controller ที่คอยประสานงานระหว่าง Service และ View
+- **`/features`**: หัวใจหลักของแอปพลิเคชัน โค้ดที่เกี่ยวกับ Business Logic ทั้งหมดจะถูกแบ่งตามฟีเจอร์ (เช่น `auth`, `farm`, `product`)
+- **`/lib`**: เก็บโค้ดพื้นฐานที่ใช้ร่วมกันทั่วทั้งโปรเจกต์ โดยเฉพาะการตั้งค่า Supabase Client
+- **`/components/ui`**: เก็บ UI Components ขนาดเล็กที่ใช้ซ้ำได้ (เช่น Button, Input)
+- **`/types`**: เก็บ Type กลาง โดยเฉพาะ `database.types.ts` ที่สร้างจาก Supabase
+- **`middleware.ts`**: จัดการเรื่อง Authentication และ Session ของผู้ใช้ในทุก Request
