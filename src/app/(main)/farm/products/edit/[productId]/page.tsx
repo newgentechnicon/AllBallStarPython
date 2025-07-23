@@ -81,7 +81,7 @@ export default function EditProductPage() {
                 setPriceFormatted(formatPrice(String(productData.price || '')));
                 setPicturePreviews(productData.image_urls || []);
 
-                const populatedMorphs = productData.product_morphs.map(pm => {
+                const populatedMorphs = productData.product_morphs.map((pm: { morphs: any; }) => {
                     const morph = pm.morphs;
                     let color_hex: string | undefined;
                     for (const cat of morphData || []) {

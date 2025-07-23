@@ -1,41 +1,23 @@
-import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
-import ProductDetailView from './ProductDetailView'; 
+import { getProductById } from '@/features/product/product.services';
+import { ProductDetailView } from '@/features/product/components/product-detail-view';
+
+type ProductDetailPageProps = {
+  params: Promise<{ productId: string }>;
+};
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: Promise<{ productId: string }>; // หรือถ้าใช้ type ที่ Next.js กำหนด
-}) {
-  const resolvedParams = await params; // await ที่นี่
-  const productId = Number(resolvedParams.productId);
+export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
+  const productId = Number((await params).productId);
 
   if (isNaN(productId)) {
     notFound();
   }
+  
+  const product = await getProductById(productId);
 
-  // สร้าง client supabase
-  const supabase = await createClient();
-
-  // โหลดข้อมูลสินค้าโดยใช้ productId
-  const { data: product, error } = await supabase
-    .from('products')
-    .select(`*,
-      farms (name, logo_url),
-      product_morphs (
-        morphs (
-          name,
-          morph_categories (name, color_hex),
-          morph_sub_categories (name, color_hex)
-        )
-      )
-    `)
-    .eq('id', productId)
-    .single();
-
-  if (error || !product) {
+  if (!product) {
     notFound();
   }
 

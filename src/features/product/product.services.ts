@@ -2,7 +2,7 @@ import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { ProductsPageData, ProductWithMorphs } from './product.types';
-import { log } from 'console';
+import type { ProductDetail } from './product.types';
 
 /**
  * ดึงข้อมูลทั้งหมดที่จำเป็นสำหรับหน้าแสดงรายการสินค้า
@@ -86,4 +86,36 @@ export async function getProductsPageData(
     totalCount: totalCount || 0,
     statusCounts,
   };
+}
+
+/**
+ * Fetches a single product's detailed information by its ID.
+ * @param productId - The ID of the product.
+ * @returns {Promise<ProductDetail | null>} The product data or null if not found.
+ */
+export async function getProductById(productId: number): Promise<ProductDetail | null> {
+  const supabase = await createClient();
+
+  const { data: product, error } = await supabase
+    .from('products')
+    .select(`*,
+      farms (name, logo_url),
+      product_morphs (
+        morphs (
+          name,
+          morph_categories (name, color_hex),
+          morph_sub_categories (name, color_hex)
+        )
+      )
+    `)
+    .eq('id', productId)
+    .is('deleted_at', null)
+    .single();
+
+  if (error) {
+    console.error('Error fetching product by ID:', error);
+    return null;
+  }
+
+  return product as ProductDetail;
 }
