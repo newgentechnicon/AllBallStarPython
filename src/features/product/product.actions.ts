@@ -112,7 +112,6 @@ export async function createProductAction(prevState: CreateProductState, formDat
   const { data: farm } = await supabase.from('farms').select('id').eq('user_id', user.id).single();
   if (!farm) return { errors: { _form: "Farm not found." } };
 
-  // ✅ 3. ใช้ .getAll() เพื่อรับค่าทั้งหมดจาก field ที่มีหลายค่า
   const validatedFields = productSchema.safeParse({
     name: formData.get('name'),
     price: formData.get('price'),
@@ -120,22 +119,16 @@ export async function createProductAction(prevState: CreateProductState, formDat
     year: formData.get('year'),
     description: formData.get('description'),
     morphs: formData.getAll('morphs'),
-    images: formData.getAll('images'), // 👈 ใช้ .getAll() ที่นี่
+    images: formData.getAll('images'),
   });
 
   if (!validatedFields.success) {
     return { errors: validatedFields.error.flatten().fieldErrors, fields: Object.fromEntries(formData.entries()) };
   }
 
-  // const imageFile = formData.get('images') as File;
-  // if (!imageFile || imageFile.size === 0) {
-  //   return { errors: { images: ['Image is required.'] }, fields: Object.fromEntries(formData.entries()) };
-  // }
-
   const { images: imageFiles, morphs, ...productData } = validatedFields.data;
 
   try {
-    // ✅ 4. อัปโหลดรูปภาพทั้งหมด
     const imageUrls: string[] = [];
     for (const imageFile of imageFiles) {
         const filePath = `${user.id}/${farm.id}/${Date.now()}_${imageFile.name}`;

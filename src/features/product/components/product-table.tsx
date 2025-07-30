@@ -28,7 +28,6 @@ export function ProductTable({ products, farm }: { products: ProductWithMorphs[]
   const handleConfirmDelete = () => {
     if (!productToDelete) return;
     startTransition(async () => {
-      console.log('Start softDeleteProduct 1');
       const result = await softDeleteProduct(productToDelete.id);
       if (result.success) {
         showSuccessToast("Product deleted successfully.");
@@ -57,7 +56,7 @@ export function ProductTable({ products, farm }: { products: ProductWithMorphs[]
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Sex</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Price</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Actions</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-300 bg-white">

@@ -76,7 +76,7 @@ export function LoginView() {
             )}
 
             <div className="pt-2">
-              <Button>Sign in</Button>
+              <Button className='w-full'>Sign in</Button>
             </div>
           </form>
         </div>
