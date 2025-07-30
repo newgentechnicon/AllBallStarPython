@@ -87,11 +87,13 @@ export async function softDeleteProduct(productId: number) {
 
   const { error } = await supabase
     .from('products')
-    .update({ deleted_at: new Date().toISOString() })
+    .update({deleted_at: new Date().toISOString()})
     .eq('id', productId)
     .eq('user_id', user.id);
 
   if (error) {
+    console.log('Error soft deleting product:', error);
+    console.log('User ID:', user.id);
     return { success: false, error: error.message };
   }
 
@@ -125,10 +127,10 @@ export async function createProductAction(prevState: CreateProductState, formDat
     return { errors: validatedFields.error.flatten().fieldErrors, fields: Object.fromEntries(formData.entries()) };
   }
 
-  const imageFile = formData.get('images') as File;
-  if (!imageFile || imageFile.size === 0) {
-    return { errors: { images: ['Image is required.'] }, fields: Object.fromEntries(formData.entries()) };
-  }
+  // const imageFile = formData.get('images') as File;
+  // if (!imageFile || imageFile.size === 0) {
+  //   return { errors: { images: ['Image is required.'] }, fields: Object.fromEntries(formData.entries()) };
+  // }
 
   const { images: imageFiles, morphs, ...productData } = validatedFields.data;
 

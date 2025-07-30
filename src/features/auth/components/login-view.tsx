@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useActionState } from 'react';
 import { login } from '@/features/auth/auth.actions';
 import type { LoginFormState } from '@/features/auth/auth.types';
-import { SubmitButton } from '@/components/ui/SubmitButton';
+import { Button } from "@/components/ui/Button";
 import { PasswordInput } from '@/components/ui/PasswordInput';
 
 export function LoginView() {
@@ -76,7 +76,7 @@ export function LoginView() {
             )}
 
             <div className="pt-2">
-              <SubmitButton>Sign in</SubmitButton>
+              <Button>Sign in</Button>
             </div>
           </form>
         </div>

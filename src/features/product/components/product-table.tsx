@@ -28,6 +28,7 @@ export function ProductTable({ products, farm }: { products: ProductWithMorphs[]
   const handleConfirmDelete = () => {
     if (!productToDelete) return;
     startTransition(async () => {
+      console.log('Start softDeleteProduct 1');
       const result = await softDeleteProduct(productToDelete.id);
       if (result.success) {
         showSuccessToast("Product deleted successfully.");
