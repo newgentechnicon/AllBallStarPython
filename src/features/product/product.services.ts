@@ -102,6 +102,7 @@ export async function getProductById(productId: number): Promise<ProductDetail |
       farms (name, logo_url),
       product_morphs (
         morphs (
+          id,
           name,
           morph_categories (name, color_hex),
           morph_sub_categories (name, color_hex)

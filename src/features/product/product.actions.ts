@@ -196,6 +196,12 @@ export async function updateProductAction(prevState: EditProductState, formData:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { errors: { _form: "Authentication required." } };
 
+  console.log('--- FORM DATA ---');
+  for (const [key, val] of formData.entries()) {
+  console.log(`${key}:`, val);
+  console.log('-----------------');
+}
+
   const validatedFields = editProductSchema.safeParse({
     id: formData.get('id'),
     name: formData.get('name'),
@@ -203,7 +209,7 @@ export async function updateProductAction(prevState: EditProductState, formData:
     sex: formData.get('sex'),
     year: formData.get('year'),
     description: formData.get('description'),
-    morphs: formData.getAll('morphs'),
+    morphs: formData.getAll('morphs'), 
     existingImageUrls: formData.get('existingImageUrls'),
   });
 

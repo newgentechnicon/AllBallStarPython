@@ -59,11 +59,32 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
   const initialState: EditProductState = { errors: {}, fields: {} };
   const [state, formAction] = useActionState(updateProductAction, initialState);
 
-  const [selectedMorphs, setSelectedMorphs] = useState<SelectedMorph[]>([]);
   const [newPictures, setNewPictures] = useState<File[]>([]);
   const [picturePreviews, setPicturePreviews] = useState<string[]>([]);
   const [searchText, setSearchText] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
+
+  // ✅ [แก้ไขจุดที่ 1] - กำหนดค่าเริ่มต้นให้ State โดยตรง
+  const [selectedMorphs, setSelectedMorphs] = useState<SelectedMorph[]>(() => {
+    // คำนวณค่าเริ่มต้นจาก prop ที่ได้รับมา
+    return product.product_morphs
+      .map(pm => {
+        const morph = pm.morphs;
+        if (!morph) return null;
+
+        const color: string =
+          morph.morph_sub_categories?.color_hex ??
+          morph.morph_categories?.color_hex ??
+          '#9CA3AF';
+
+        return {
+          id: morph.id,
+          name: morph.name,
+          color_hex: color,
+        };
+      })
+      .filter((item): item is SelectedMorph => item !== null);
+  });
 
   useEffect(() => {
     setPicturePreviews(product.image_urls || []);
@@ -104,9 +125,23 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
   };
 
   const formActionWithFiles = (formData: FormData) => {
+    // ส่วนจัดการรูปภาพ (เหมือนเดิม)
     newPictures.forEach(file => formData.append('newImages', file));
     const existingUrls = picturePreviews.filter(p => !p.startsWith('blob:'));
     formData.append('existingImageUrls', existingUrls.join(','));
+
+    // --- ส่วนที่สำคัญที่สุดในการแก้ปัญหา ---
+    // บังคับให้ส่งข้อมูล morphs จาก State ไปกับฟอร์มเสมอ
+    console.log('Selected Morphs:', selectedMorphs);
+    formData.delete('morphs'); // ลบของเก่าที่อาจหลงเหลือจาก hidden input
+    selectedMorphs.forEach(morph => {
+      // เช็คให้แน่ใจว่า morph และ morph.id ไม่ใช่ค่าว่าง
+      if (morph && morph.id) {
+        formData.append('morphs', morph.id.toString());
+      }
+    });
+
+    // เรียก Server Action ตัวจริงพร้อมข้อมูลที่ครบถ้วน
     formAction(formData);
   };
 
@@ -228,17 +263,40 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
               <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none text-gray-400"><PlusIcon /></div>
               {isInputFocused && (
                 <div className="absolute z-50 w-full max-h-72 mt-1 p-1 bg-white border border-gray-200 rounded-lg overflow-y-auto shadow">
-                  {filteredCategories.map((category: MorphCategory) => (
-                    <div key={category.id}>
-                      <div className="px-3 py-2 font-semibold text-sm" style={{ color: category.color_hex ?? '#1F2937' }}>{category.name}</div>
-                      {category.morphs.map((morph: Morph) => (
-                        <button type="button" key={morph.id} onClick={() => { handleAddMorph(morph); setSearchText(''); }} className="block w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md">{morph.name}</button>
+                  {filteredCategories.length === 0 && (
+                    <div className="px-4 py-2 text-sm text-gray-500">
+                      No results found.
+                    </div>
+                  )}
+                  {filteredCategories.map((category, categoryIndex) => (
+                    <div key={`cat-${category.id}-${categoryIndex}`}>
+                      <div className="px-3 py-2 font-semibold text-sm" style={{ color: category.color_hex ?? '#1F2937' }}>
+                        {category.name}
+                      </div>
+                      {category.morphs.map((morph, morphIndex) => (
+                        <button
+                          type="button"
+                          key={`morph-${morph.id}-${morphIndex}`}
+                          onClick={() => { handleAddMorph(morph); setSearchText(''); }}
+                          className="block w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
+                        >
+                          {morph.name}
+                        </button>
                       ))}
-                      {category.sub_categories.map((sub: MorphSubCategory) => (
-                        <div key={sub.id} className="pl-3">
-                          <div className="px-3 py-1 text-xs font-medium" style={{ color: sub.color_hex ?? '#6B7280' }}>{sub.name}</div>
-                          {(sub.morphs ?? []).map((morph: Morph) => (
-                            <button type="button" key={morph.id} onClick={() => { handleAddMorph(morph); setSearchText(''); }} className="block w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md">{morph.name}</button>
+                      {category.sub_categories.map((sub, subIndex) => (
+                        <div key={`sub-${sub.id}-${subIndex}`} className="pl-3">
+                          <div className="px-3 py-1 text-xs font-medium" style={{ color: sub.color_hex ?? '#6B7280' }}>
+                            {sub.name}
+                          </div>
+                          {(sub.morphs ?? []).map((morph, subMorphIndex) => (
+                            <button
+                              type="button"
+                              key={`submorph-${morph.id}-${subMorphIndex}`}
+                              onClick={() => { handleAddMorph(morph); setSearchText(''); }}
+                              className="block w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
+                            >
+                              {morph.name}
+                            </button>
                           ))}
                         </div>
                       ))}
