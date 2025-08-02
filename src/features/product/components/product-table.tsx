@@ -48,15 +48,15 @@ export function ProductTable({ products, farm }: { products: ProductWithMorphs[]
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div className="overflow-hidden rounded-lg border border-gray-300">
               <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
+                <thead>
                   {/* ✅ ส่วนหัวตารางที่เพิ่มเข้ามา */}
                   <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">NAME</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Sex</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Price</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"></th>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-[#6B7280] sm:pl-6">NAME</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">Status</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">ID</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">Sex</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">Price</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-300 bg-white">
@@ -78,7 +78,7 @@ export function ProductTable({ products, farm }: { products: ProductWithMorphs[]
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         <StatusDropdown productId={product.id} currentStatus={product.status}/>
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{`GK-${farm.id}-${product.id}`}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{`${product.product_id}`}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><SexDisplay sex={product.sex} /></td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">฿{product.price?.toLocaleString() || "N/A"}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

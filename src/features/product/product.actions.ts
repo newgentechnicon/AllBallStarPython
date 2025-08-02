@@ -131,16 +131,45 @@ export async function createProductAction(prevState: CreateProductState, formDat
   try {
     const imageUrls: string[] = [];
     for (const imageFile of imageFiles) {
-        const filePath = `${user.id}/${farm.id}/${Date.now()}_${imageFile.name}`;
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, imageFile);
-        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
-        
-        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(filePath);
-        imageUrls.push(publicUrl);
+      const filePath = `${user.id}/${farm.id}/${Date.now()}_${imageFile.name}`;
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, imageFile);
+      if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(filePath);
+      imageUrls.push(publicUrl);
     }
-    
+
+    // Generate product_id
+    const today = new Date();
+    const yy = String(today.getFullYear()).slice(-2);
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    // Fetch the last product_id created today to determine the next numbering
+    const { data: latestProduct } = await supabase
+      .from('products')
+      .select('product_id')
+      .ilike('product_id', `GK-${yy}${mm}${dd}-%`)
+      .order('product_id', { ascending: false })
+      .limit(1)
+      .single();
+
+    let numbering = 1;
+    if (latestProduct && latestProduct.product_id) {
+      const lastNumberPart = latestProduct.product_id.split('-').pop();
+      if (lastNumberPart) {
+        const lastNumber = parseInt(lastNumberPart, 10);
+        if (!isNaN(lastNumber)) {
+          numbering = lastNumber + 1;
+        }
+      }
+    }
+
+    const productId = `GK-${yy}${mm}${dd}-${String(numbering).padStart(3, '0')}`;
+
     const { data: newProduct, error: insertError } = await supabase.from('products').insert({
       ...productData,
+      product_id: productId, // Add the generated product_id
       farm_id: farm.id,
       user_id: user.id,
       image_urls: imageUrls,
@@ -152,12 +181,12 @@ export async function createProductAction(prevState: CreateProductState, formDat
     const newMorphLinks = morphs.map(morphId => ({ product_id: newProduct.id, morph_id: Number(morphId) }));
     const { error: morphsInsertError } = await supabase.from('product_morphs').insert(newMorphLinks);
     if (morphsInsertError) throw morphsInsertError;
-    
+
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
     return { errors: { _form: message }, fields: Object.fromEntries(formData.entries()) };
   }
-  
+
   revalidatePath('/farm/products');
   redirect('/farm/products');
 }

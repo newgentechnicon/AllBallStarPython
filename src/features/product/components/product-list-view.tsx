@@ -25,7 +25,7 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
   const searchParams = useSearchParams();
   const currentStatus = searchParams.get("productStatus") || "All";
   const currentPage = Number(searchParams.get("page")) || 1;
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
 
   const { farm, products, totalCount, statusCounts } = data;
 
@@ -54,10 +54,7 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
     { label: "On Hold", count: statusCounts["On Hold"], key: "On Hold" },
   ];
 
-  const breadcrumbPaths = [
-    { name: "Home", href: "/farm" },
-    { name: "Farm" },
-  ];
+  const breadcrumbPaths = [{ name: "Home", href: "/farm" }, { name: "Farm" }];
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
@@ -88,7 +85,7 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
                   quality={100}
                   style={{ objectFit: "contain" }}
                 />
-                <span className="text-sm font-medium">0</span>
+                <span className="text-sm font-medium">{totalCount}</span>
               </div>
             </div>
           </div>
@@ -107,7 +104,7 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
 
         <div className="px-4">
           <div className="mt-4 rounded-lg bg-white p-4 shadow">
-            <div className="border-b border-gray-200">
+            <div>
               <Tabs
                 tabs={tabs}
                 selectedTab={currentStatus}

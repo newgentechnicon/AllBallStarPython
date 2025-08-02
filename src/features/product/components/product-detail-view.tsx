@@ -123,7 +123,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500">ID :</p>
-                <p className="font-semibold text-gray-800">{`GK-${product.farm_id}-${product.id}`}</p>
+                <p className="font-semibold text-gray-800">{`${product.product_id}`}</p>
               </div>
               <div>
                 <p className="text-gray-500">Status :</p>
