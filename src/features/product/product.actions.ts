@@ -92,8 +92,6 @@ export async function softDeleteProduct(productId: number) {
     .eq('user_id', user.id);
 
   if (error) {
-    console.log('Error soft deleting product:', error);
-    console.log('User ID:', user.id);
     return { success: false, error: error.message };
   }
 
@@ -195,12 +193,6 @@ export async function updateProductAction(prevState: EditProductState, formData:
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { errors: { _form: "Authentication required." } };
-
-  console.log('--- FORM DATA ---');
-  for (const [key, val] of formData.entries()) {
-  console.log(`${key}:`, val);
-  console.log('-----------------');
-}
 
   const validatedFields = editProductSchema.safeParse({
     id: formData.get('id'),

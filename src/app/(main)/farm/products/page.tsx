@@ -15,8 +15,6 @@ export default async function FarmProductsPage({ searchParams }: FarmProductsPag
   const currentQuery = (await searchParams)['q'] ?? '';
   const currentStatus = (await searchParams)['productStatus'] ?? 'All';
 
-  console.log('currentStatus:', currentStatus);
-
   const pageData = await getProductsPageData({
     page: currentPage,
     q: currentQuery,

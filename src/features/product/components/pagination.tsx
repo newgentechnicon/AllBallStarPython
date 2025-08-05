@@ -1,25 +1,17 @@
 'use client';
 
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-
 interface PaginationProps {
     currentPage: number;
     totalPages: number;
     totalCount: number;
     itemsPerPage: number;
+    onPageChange: (page: number) => void;
 }
 
-export function Pagination({ currentPage, totalPages, totalCount, itemsPerPage }: PaginationProps) {
+export function Pagination({ currentPage, totalPages, totalCount, itemsPerPage, onPageChange }: PaginationProps) {
     const startItem = totalCount > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
     const endItem = Math.min(currentPage * itemsPerPage, totalCount);
-    const searchParams = useSearchParams();
 
-    const createPageURL = (pageNumber: number) => {
-        const params = new URLSearchParams(searchParams);
-        params.set('page', pageNumber.toString());
-        return `?${params.toString()}`;
-    };
 
     // if (totalPages <= 1) return null;
 
@@ -32,22 +24,24 @@ export function Pagination({ currentPage, totalPages, totalCount, itemsPerPage }
                 </p>
             </div>
             <div className="flex items-center gap-2">
-                <Link 
-                    href={createPageURL(currentPage - 1)} 
+                <button 
+                    type="button"
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage <= 1}
                     className={`rounded border p-1.5 ${currentPage <= 1 ? 'pointer-events-none text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
-                    scroll={false}
                 >
                     &lt;
-                </Link>
+                </button>
                 <span className="rounded border bg-gray-200 px-3 py-1.5 text-sm font-semibold">{currentPage}</span>
                 <span className="text-sm text-gray-600">of {totalPages}</span>
-                <Link 
-                    href={createPageURL(currentPage + 1)} 
+                <button 
+                    type="button"
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
                     className={`rounded border p-1.5 ${currentPage >= totalPages ? 'pointer-events-none text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
-                    scroll={false}
                 >
                     &gt;
-                </Link>
+                </button>
             </div>
         </div>
     );

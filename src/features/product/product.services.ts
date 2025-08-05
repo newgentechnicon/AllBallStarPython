@@ -26,9 +26,11 @@ export async function getProductsPageData(
   const currentPage = Number(Array.isArray(params.page) ? params.page[0] : params.page);
   const currentQuery = Array.isArray(params.q) ? params.q[0] : params.q;
   const currentStatus = Array.isArray(params.status) ? params.status[0] : params.status;
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
+
+  console.log('params.page:', params.page);
 
   // 3. ดึงข้อมูล "จำนวน" สำหรับ Tabs (ส่วนนี้ทำงานถูกต้องอยู่แล้ว)
   const fetchCount = async (status?: 'Available' | 'On Hold') => {
@@ -83,7 +85,9 @@ export async function getProductsPageData(
   return {
     farm,
     products: (data as ProductWithMorphs[]) || [],
+    // totalCount นี้จะเปลี่ยนไปตาม filter (status/search) ซึ่งถูกต้องแล้วสำหรับการคำนวณ totalPages
     totalCount: totalCount || 0,
+    // statusCounts ใช้สำหรับแสดงตัวเลขบนป้าย Tab แต่ละอัน
     statusCounts,
   };
 }

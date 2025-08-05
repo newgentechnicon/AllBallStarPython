@@ -28,8 +28,12 @@ export default function RootLayout({
       <body className={`${inter.variable}`}>
         <AuthProvider>
           <PrelineProvider>{children}</PrelineProvider>
+          {/* {children} */}
         </AuthProvider>
       </body>
+      {/* <script src="./assets/vendor/jquery/dist/jquery.min.js" async />
+      <script src="./assets/vendor/datatables.net/js/dataTables.min.js" async /> */}
+      {/* <PrelineScriptWrapper /> */}
     </html>
   );
 }
