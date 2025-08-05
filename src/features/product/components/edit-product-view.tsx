@@ -314,7 +314,6 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
                 <option value="">Select</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
-                <option value="Unknown">Unknown</option>
               </select>
               {state.errors.sex && <p className="mt-1 text-sm text-red-600">{state.errors.sex[0]}</p>}
             </div>

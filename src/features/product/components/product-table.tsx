@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { StatusDropdown } from "./status-dropdown";
@@ -9,15 +9,7 @@ import type { ProductWithMorphs } from "@/features/product/product.types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { Pagination } from "./pagination";
 import { DeleteProductModal } from "./DeleteProductModal";
-import {
-  ViewIcon,
-  DeleteIcon,
-  MaleIcon,
-  FemaleIcon,
-} from "@/components/ui/icons";
 
-// เราไม่จำเป็นต้องประกาศ global type ของ Preline ที่นี่แล้ว
-// เพราะ Component ที่เกี่ยวข้องจัดการตัวเองเรียบร้อย
 declare global {
   interface Window {
     HSOverlay: {
@@ -29,8 +21,26 @@ declare global {
 
 const SexDisplay = ({ sex }: { sex: string | null }) => (
   <div className="flex items-center gap-2">
-    {sex === "Male" && <MaleIcon />}
-    {sex === "Female" && <FemaleIcon />}
+    {sex === "Male" && (
+      <Image
+        src="/images/male-icon.png"
+        alt="upload"
+        width={13}
+        height={13}
+        quality={100}
+        className="mx-auto"
+      />
+    )}
+    {sex === "Female" && (
+      <Image
+        src="/images/female-icon.png"
+        alt="upload"
+        width={10}
+        height={16}
+        quality={100}
+        className="mx-auto"
+      />
+    )}
     <span>{sex || "N/A"}</span>
   </div>
 );
@@ -48,8 +58,6 @@ export function ProductTable({
   pagination,
 }: {
   products: ProductWithMorphs[];
-  // farm prop ไม่ได้ถูกใช้งานแล้ว จึงลบออกได้
-  // farm: Farm;
   pagination: PaginationProps;
 }) {
   const [productToDelete, setProductToDelete] =
@@ -57,7 +65,34 @@ export function ProductTable({
   const [isPending, startTransition] = useTransition();
   const { showSuccessToast, showErrorToast } = useAppToast();
 
-  // ฟังก์ชันสำหรับยืนยันการลบ (Logic อยู่ที่นี่ที่เดียว)
+  useEffect(() => {
+    const modalElement = document.getElementById("delete-product-modal");
+    const handleModalClose = () => {
+      setProductToDelete(null);
+    };
+
+    if (modalElement) {
+      modalElement.addEventListener("close.hs.overlay", handleModalClose);
+    }
+    return () => {
+      if (modalElement) {
+        modalElement.removeEventListener("close.hs.overlay", handleModalClose);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (productToDelete) {
+      if (window.HSOverlay) {
+        window.HSOverlay.open("#delete-product-modal");
+      } else {
+        console.error(
+          "CHECKPOINT 4: FAILED. window.HSOverlay is not available!"
+        );
+      }
+    }
+  }, [productToDelete]);
+
   const handleConfirmDelete = () => {
     if (!productToDelete) return;
 
@@ -65,51 +100,61 @@ export function ProductTable({
       const result = await softDeleteProduct(productToDelete.id);
       if (result.success) {
         showSuccessToast("Product deleted successfully.");
+        // ✅ ปิด modal
+        if (window.HSOverlay) {
+          window.HSOverlay.close("#delete-product-modal");
+        }
       } else {
         showErrorToast(`Error: ${result.error}`);
       }
-      
-      // เมื่อลบเสร็จ ให้เคลียร์ state ซึ่งจะทำให้ Modal หายไปโดยอัตโนมัติ
-      setProductToDelete(null); 
+
+      setProductToDelete(null);
     });
-  };
-
-  // ฟังก์ชันสำหรับ "การเตรียมตัว" ก่อนเปิด Modal
-  const handleOpenDeleteModal = (product: ProductWithMorphs) => {
-    // 1. ตั้งค่า state ของ React ว่าจะลบ product ตัวไหน
-    setProductToDelete(product);
-
-    // 2. สั่งเปิด Modal ของ Preline ด้วย JavaScript โดยตรง
-    if (window.HSOverlay) {
-      window.HSOverlay.open('#delete-product-modal');
-    }
   };
 
   return (
     <>
       <div className="mt-6 flow-root">
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+        <div className="-my-2 overflow-x-auto">
+          <div className="inline-block min-w-full py-2 align-middle">
             <div className="overflow-hidden rounded-lg border border-gray-300">
               <table className="min-w-full divide-y divide-gray-300">
                 <thead>
                   <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-[#6B7280] sm:pl-6">
+                    <th
+                      scope="col"
+                      className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-[#6B7280] sm:pl-6"
+                    >
                       NAME
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]"
+                    >
                       Status
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]"
+                    >
                       ID
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]"
+                    >
                       Sex
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium text-[#6B7280]"
+                    >
                       Price
                     </th>
-                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6" />
+                    <th
+                      scope="col"
+                      className="relative py-3.5 pl-3 pr-4 sm:pr-6"
+                    />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-300 bg-white">
@@ -153,17 +198,31 @@ export function ProductTable({
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/farm/products/${product.id}`}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#D1D5DB] bg-white text-gray-800 hover:bg-gray-50"
                           >
-                            <ViewIcon />
+                            <Image
+                              src="/images/eye-icon.png"
+                              alt="upload"
+                              width={16}
+                              height={16}
+                              quality={100}
+                              className="mx-auto"
+                            />
                           </Link>
-                          {/* ปุ่มลบจะเรียกใช้ฟังก์ชันใหม่ที่เราสร้างขึ้น */}
                           <button
                             type="button"
-                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50"
-                            onClick={() => handleOpenDeleteModal(product)}
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#FCA5A5] bg-white text-gray-800 hover:bg-gray-50"
+                            data-hs-overlay="#delete-product-modal"
+                            onClick={() => setProductToDelete(product)}
                           >
-                            <DeleteIcon />
+                            <Image
+                              src="/images/trash-icon.png"
+                              alt="upload"
+                              width={16}
+                              height={16}
+                              quality={100}
+                              className="mx-auto"
+                            />
                           </button>
                         </div>
                       </td>
@@ -176,7 +235,7 @@ export function ProductTable({
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="pt-4 px-2">
         <Pagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
@@ -185,8 +244,6 @@ export function ProductTable({
           onPageChange={pagination.onPageChange}
         />
       </div>
-      
-      {/* เรียกใช้ Component Modal ที่แยกออกไปแล้ว */}
       <DeleteProductModal
         product={productToDelete}
         onConfirm={handleConfirmDelete}

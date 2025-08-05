@@ -26,7 +26,7 @@ export async function getProductsPageData(
   const currentPage = Number(Array.isArray(params.page) ? params.page[0] : params.page);
   const currentQuery = Array.isArray(params.q) ? params.q[0] : params.q;
   const currentStatus = Array.isArray(params.status) ? params.status[0] : params.status;
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 

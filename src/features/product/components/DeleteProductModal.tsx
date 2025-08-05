@@ -1,7 +1,6 @@
 "use client";
 import type { ProductWithMorphs } from "@/features/product/product.types";
 
-// เพิ่มไอคอนสำหรับ Modal เพื่อความสวยงาม
 const WarningIcon = () => (
   <svg
     className="size-10 text-red-500 mx-auto"
@@ -27,25 +26,20 @@ interface DeleteProductModalProps {
 }
 
 export function DeleteProductModal({ product, onConfirm, isPending }: DeleteProductModalProps) {
-  if (!product) return null;
-
   return (
-    // 1. Container หลัก: เพิ่ม class 'pointer-events-none' เพื่อให้คลิกทะลุไปที่ backdrop ได้
     <div
       id="delete-product-modal"
       className="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none bg-gray-900/70"
     >
-      {/* 2. Animation & Centering Target: ส่วนนี้จะจัดการเรื่อง animation และการจัดให้อยู่กลางจอ */}
       <div className="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
-        {/* 3. ตัว Modal Card: เพิ่ม 'pointer-events-auto' กลับเข้ามาเพื่อให้คลิกใน card ได้ */}
         <div className="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto">
-          
           <div className="p-4 sm:p-7">
             <div className="text-center">
               <WarningIcon />
               <h2 className="block text-2xl font-bold text-gray-800 mt-4">
                 Delete Product
               </h2>
+              {product ? (
               <div className="mt-4 px-6">
                 <p className="text-gray-600">
                   Are you sure you want to delete this product?
@@ -58,15 +52,16 @@ export function DeleteProductModal({ product, onConfirm, isPending }: DeleteProd
                   This action cannot be undone.
                 </p>
               </div>
+            ) : (
+              <div className="mt-4 px-6 text-gray-500">Loading product info...</div>
+            )}
             </div>
           </div>
           
-          {/* 4. ส่วน Footer ของ Modal: วางปุ่มต่างๆ ที่นี่ */}
           <div className="flex justify-center items-center gap-x-2 p-4 border-t">
             <button
               type="button"
               className="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-              // ปุ่ม Cancel ใช้ data attribute ของ Preline เพื่อปิดตัวเอง
               data-hs-overlay="#delete-product-modal"
             >
               Cancel

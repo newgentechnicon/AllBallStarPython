@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import type { ProductsPageData } from "@/features/product/product.types";
 import { ProductTable } from "./product-table";
 import { SearchBox } from "./search-box";
@@ -24,29 +24,18 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
 
   const currentStatus = searchParams.get("productStatus") || "All";
   const currentPage = Number(searchParams.get("page")) || 1;
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
 
   const { farm, products, totalCount, statusCounts } = data;
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     if (window.HSStaticMethods) {
-  //       window.HSStaticMethods.autoInit();
-  //     }
-  //   }, 100);
-  // }, []);
-
-  // ✅ 1. สร้างฟังก์ชันกลางสำหรับสร้าง URL
   const createURL = useCallback(
     (newParams: Record<string, string>) => {
       const params = new URLSearchParams(searchParams.toString());
-      // วนลูปเพื่อตั้งค่า parameter ใหม่
       for (const [key, value] of Object.entries(newParams)) {
         if (value) {
           params.set(key, value);
         } else {
-          // ถ้าค่าเป็น null หรือ empty string ให้ลบทิ้ง
           params.delete(key);
         }
       }
@@ -55,10 +44,8 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
     [pathname, searchParams]
   );
 
-  // ✅ 2. ทำให้ handler ต่างๆ เรียบง่ายขึ้น โดยเรียกใช้ createURL
   const handleTabSelect = (key: string) => {
     const newStatus = key === "All" ? "" : key;
-    // เมื่อเปลี่ยน Tab ให้กลับไปหน้า 1 เสมอ
     router.push(createURL({ productStatus: newStatus, page: "1" }));
   };
 
@@ -149,7 +136,6 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
               ) : (
                 <ProductTable
                   products={products}
-                  farm={farm}
                   pagination={{
                     currentPage,
                     totalPages,
