@@ -29,7 +29,7 @@ export function Breadcrumb({ paths, className = '' }: BreadcrumbProps) {
   return (
     <ol className={`flex items-center whitespace-nowrap ${className}`}>
       {paths.map((path, index) => (
-        <li key={path.name} className="inline-flex items-center">
+        <li key={path.name} className="inline-flex items-center text-sm font-medium text-[#4B5563]">
           {path.href ? (
             <Link href={path.href} className={linkClasses}>
               {path.name}

@@ -2,13 +2,13 @@
 
 import { useActionState, useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createProductAction } from "@/features/product/product.actions";
 import type { CreateProductState } from "@/features/product/product.types";
 import type { Tables } from "@/types/database.types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { Button } from "@/components/ui/Button";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 // --- Type Definitions ---
 type Morph = Tables<"morphs">;
@@ -65,6 +65,10 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
 
   const initialState: CreateProductState = { errors: {}, fields: {} };
   const [state, formAction] = useActionState(createProductAction, initialState);
+
+  const [description, setDescription] = useState(
+    (state.fields?.description as string) || ''
+  );
 
   // State for managing UI that isn't part of the form submission
   const [selectedMorphs, setSelectedMorphs] = useState<SelectedMorph[]>([]);
@@ -167,29 +171,25 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
     formAction(formData);
   };
 
+  const breadcrumbPaths = [
+    { name: "Home", href: "/farm" },
+    { name: "Products", href: "/farm/products" },
+    { name: "Add Product" },
+  ];
+
   return (
     <div className="container mx-auto max-w-2xl py-4 bg-white dark:bg-gray-900">
-      <nav className="flex px-4 text-sm text-gray-500">
-        <Link href="/farm" className="hover:underline">
-          Home
-        </Link>
-        <span className="mx-2">/</span>
-        <Link href="/farm/products" className="hover:underline">
-          Products
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="font-medium text-gray-700">Add Product</span>
-      </nav>
+      <Breadcrumb paths={breadcrumbPaths} className="px-4" />
 
       <div className="px-4 mt-4 pb-4 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-[#1F2937]">Add Product</h1>
+        <h1 className="text-lg font-bold text-[#1F2937]">Add Product</h1>
       </div>
 
       <form action={formActionWithFiles} className="p-4 space-y-6" noValidate>
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-semibold text-gray-700 mb-1"
           >
             Product Name*
           </label>
@@ -197,6 +197,7 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
             type="text"
             id="name"
             name="name"
+            placeholder="Put product name here"
             className={inputClassName(!!state.errors.name)}
             defaultValue={state.fields?.name as string}
           />
@@ -220,7 +221,7 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
         <div>
           <label
             htmlFor="price"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-semibold text-gray-700 mb-1"
           >
             Product Price*
           </label>
@@ -228,6 +229,7 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
             type="number"
             id="price"
             name="price"
+            placeholder="Put product price here"
             className={inputClassName(!!state.errors.price)}
             defaultValue={state.fields?.price as string}
             inputMode="numeric"
@@ -238,31 +240,36 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
             Genetics (Morphs)*
           </label>
-          <div
-            className={`flex flex-wrap gap-2 rounded-lg border p-2 min-h-[4rem] ${
-              state.errors.morphs ? "border-red-500" : "border-gray-300"
-            }`}
-          >
-            {selectedMorphs.map((morph) => (
-              <div
-                key={morph.id}
-                className="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm font-medium text-gray-700"
-              >
-                <input type="hidden" name="morphs" value={morph.id} />
-                <span
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: morph.color_hex ?? "#9CA3AF" }}
-                ></span>
-                <span>{morph.name}</span>
-                <button type="button" onClick={() => handleRemoveMorph(morph)}>
-                  <CloseIcon className="h-3 w-3 text-gray-500 hover:text-gray-800" />
-                </button>
-              </div>
-            ))}
-          </div>
+          {selectedMorphs.length > 0 && (
+            <div
+              className={`flex flex-wrap gap-2 rounded-lg border p-2 min-h-[4rem] mb-2 ${
+                state.errors.morphs ? "border-red-500" : "border-gray-300"
+              }`}
+            >
+              {selectedMorphs.map((morph) => (
+                <div
+                  key={morph.id}
+                  className="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm font-medium text-gray-700"
+                >
+                  <input type="hidden" name="morphs" value={morph.id} />
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: morph.color_hex ?? "#9CA3AF" }}
+                  ></span>
+                  <span>{morph.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMorph(morph)}
+                  >
+                    <CloseIcon className="h-3 w-3 text-gray-500 hover:text-gray-800" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {state.errors.morphs && (
             <p className="mt-1 text-sm text-red-600">
               {state.errors.morphs[0]}
@@ -272,7 +279,7 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
           <div className="relative w-full mt-2">
             <input
               type="text"
-              placeholder="Search Morph..."
+              placeholder="Add"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onFocus={() => setIsInputFocused(true)}
@@ -291,11 +298,14 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
                 )}
                 {filteredCategories.map((category) => (
                   <div key={category.id}>
-                    <div
-                      className="px-3 py-2 font-semibold text-sm"
-                      style={{ color: category.color_hex ?? "#1F2937" }}
-                    >
-                      {category.name}
+                    <div className="flex items-center gap-x-2 px-3 py-2">
+                      <span
+                        className="font-semibold text-sm"
+                        style={{ color: "#9CA3AF" }}
+                      >
+                        {category.name}
+                      </span>
+                      <span className="flex-grow border-t border-dashed border-gray-300 dark:border-neutral-700"></span>
                     </div>
                     {(category.morphs ?? []).map((morph) => (
                       <button
@@ -305,18 +315,27 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
                           handleAddMorph(morph);
                           setSearchText("");
                         }}
-                        className="block w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
+                        className="flex items-center gap-x-2 w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
                       >
-                        {morph.name}
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{
+                            backgroundColor: category.color_hex ?? "#9CA3AF",
+                          }}
+                        ></span>
+                        <span>{morph.name}</span>
                       </button>
                     ))}
                     {(category.sub_categories ?? []).map((sub) => (
                       <div key={sub.id} className="pl-3">
-                        <div
-                          className="px-3 py-1 text-xs font-medium"
-                          style={{ color: sub.color_hex }}
-                        >
-                          {sub.name}
+                        <div className="flex items-center gap-x-2 px-3 py-1">
+                          <span
+                            className="text-xs font-medium"
+                            style={{ color: "#9CA3AF" }}
+                          >
+                            {sub.name}
+                          </span>
+                          <span className="flex-grow border-t border-dashed border-gray-300 dark:border-neutral-700"></span>
                         </div>
                         {(sub.morphs ?? []).map((morph) => (
                           <button
@@ -326,9 +345,15 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
                               handleAddMorph(morph);
                               setSearchText("");
                             }}
-                            className="block w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
+                            className="flex items-center gap-x-2 w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
                           >
-                            {morph.name}
+                            <span
+                              className="h-2 w-2 rounded-full"
+                              style={{
+                                backgroundColor: sub.color_hex ?? "#9CA3AF",
+                              }}
+                            ></span>
+                            <span>{morph.name}</span>
                           </button>
                         ))}
                       </div>
@@ -344,7 +369,7 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
           <div>
             <label
               htmlFor="sex"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-1"
             >
               Sex*
             </label>
@@ -365,7 +390,7 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
           <div>
             <label
               htmlFor="year"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-1"
             >
               Year*
             </label>
@@ -391,18 +416,26 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
         </div>
 
         <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Product Description*
-          </label>
+          <div className="flex justify-between items-center mb-1">
+            <label
+              htmlFor="description"
+              className="block text-sm font-semibold text-gray-700"
+            >
+              Product Description*
+            </label>
+            <span className="text-sm text-gray-500">
+              {description.length} / 500
+            </span>
+          </div>
           <textarea
             id="description"
             name="description"
             rows={4}
+            placeholder="Put product description here"
+            maxLength={500}
             className={inputClassName(!!state.errors.description)}
-            defaultValue={state.fields?.description as string}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           ></textarea>
           {state.errors.description && (
             <p className="mt-1 text-sm text-red-600">

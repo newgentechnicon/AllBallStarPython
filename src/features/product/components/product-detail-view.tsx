@@ -23,40 +23,6 @@ const BackIcon = () => (
     <path d="m15 18-6-6 6-6" />
   </svg>
 );
-const MaleIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-5 w-5 text-blue-500"
-  >
-    <circle cx="12" cy="10" r="4" />
-    <path d="M12 14v7m-3-3h6" />
-  </svg>
-);
-const FemaleIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-5 w-5 text-pink-500"
-  >
-    <circle cx="10" cy="7" r="4" />
-    <path d="M10 11v10m-3-3h6" />
-  </svg>
-);
 
 export function ProductDetailView({ product }: { product: ProductDetail }) {
   const router = useRouter();
@@ -94,30 +60,17 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
   };
 
   return (
-    <div className="bg-white min-h-screen relative">
+    <div className="bg-white mx-auto max-w-2xl min-h-screen relative">
       <div className="container mx-auto max-w-md pb-24">
         {/* Header and Breadcrumbs */}
         <div className="p-4">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/farm/products")}
             className="flex items-center gap-1 text-gray-700 font-semibold mb-4"
           >
             <BackIcon />
             Back
           </button>
-          <nav className="flex text-sm text-gray-500">
-            <Link href="/farm" className="hover:underline">
-              Home
-            </Link>
-            <span className="mx-2">/</span>
-            <Link href="/farm/products" className="hover:underline">
-              Products
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="font-medium text-gray-700 truncate">
-              {product.name}
-            </span>
-          </nav>
         </div>
 
         {/* Image Slider */}
@@ -254,7 +207,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
                       width={13}
                       height={13}
                       quality={100}
-                      className="mx-auto"
+                      className="mr-1"
                     />
                   )}
                   {product.sex === "Female" && (
@@ -264,7 +217,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
                       width={10}
                       height={16}
                       quality={100}
-                      className="mx-auto"
+                      className="mr-1"
                     />
                   )}
                   <span>{product.sex}</span>
@@ -288,7 +241,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
                 </div>
               </div>
               <div className="col-span-2">
-                <p className="text-gray-500">Genetic :</p>
+                <p className="text-gray-500">Morphs :</p>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {product.product_morphs.map((pm, index) => (
                     <MorphTag key={index} morph={pm} />
