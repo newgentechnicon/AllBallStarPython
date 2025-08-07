@@ -78,13 +78,13 @@ export function Navbar() {
             </a>
             <a
               className="font-medium text-center text-gray-600 hover:text-gray-400 focus:outline-hidden focus:text-gray-400 dark:text-neutral-400 dark:hover:text-neutral-500 dark:focus:text-neutral-500"
-              href="/productss"
+              href="/products"
             >
               Products
             </a>
             <a
               className="font-medium text-center text-gray-600 hover:text-gray-400 focus:outline-hidden focus:text-gray-400 dark:text-neutral-400 dark:hover:text-neutral-500 dark:focus:text-neutral-500"
-              href="/contact-us"
+              href="/contact"
             >
               Contact Us
             </a>

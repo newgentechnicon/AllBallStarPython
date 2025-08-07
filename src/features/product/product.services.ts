@@ -138,3 +138,27 @@ export async function getStructuredMorphs() {
   }
   return data;
 }
+
+export async function getAllProducts(): Promise<ProductWithMorphs[]> {
+  const supabase = await createClient();
+  
+  const { data: products, error } = await supabase
+    .from('products')
+    .select(`
+      *,
+      farms ( name ),
+      product_morphs (
+        morphs ( name )
+      )
+    `)
+    .eq('status', 'Available') // Only fetch available products
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all products:', error);
+    return [];
+  }
+  
+  return products as ProductWithMorphs[];
+}
