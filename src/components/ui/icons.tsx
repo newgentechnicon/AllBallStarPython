@@ -1,3 +1,5 @@
+import { SVGProps } from "react";
+
 // src/components/ui/icons.tsx
 export const EyeIcon = ({ ...props }) => (
   <svg
@@ -150,4 +152,40 @@ export const DeleteIcon = () => (
       d="M19 7L5 7M10 11v6M14 11v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"
     />
   </svg>
+);
+
+export const LogoIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    {/* NOTE: This is a placeholder logo. You should replace it with your actual SVG path data. */}
+    <path d="M20 4L36 20L20 36L4 20L20 4Z" stroke="currentColor" strokeWidth="2"/>
+    <path d="M20 12L28 20L20 28L12 20L20 12Z" fill="currentColor"/>
+  </svg>
+);
+
+export const HamburgerIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3 6H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+export const InstagramIcon = (props: SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+    </svg>
+);
+
+export const FacebookIcon = (props: SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+    </svg>
+);
+
+export const LineIcon = (props: SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M13.25,18.5l-2.5-2.583V11.5h-1.5v5l-2.25-2.25L2,19.25l2.75-2.75l2.25,2.25l1.5-1.5V11.5h1.5v4.417L12.5,13.5l4.25,4.75l2.75-2.75L22,18.25l-4.75-5.25l-2.25,2.25V11.5h1.5v5.333l1.5-1.5l2.75,2.75L22,19.75z M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2"></path>
+    </svg>
 );
