@@ -48,7 +48,7 @@ export function SearchBox() {
         router.replace(`${pathname}?${params.toString()}`);
     });
 
-  }, [debouncedValue, initialQuery, pathname, router]); // Dependency ที่ถูกต้อง
+  }, [debouncedValue, initialQuery, pathname, router, searchParams]); // Dependency ที่ถูกต้อง
 
   return (
     <div className="relative">
