@@ -13,7 +13,7 @@ const CloseIcon = ({ ...props }) => (
     viewBox="0 0 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="3"
     strokeLinecap="round"
     strokeLinejoin="round"
   >
@@ -87,7 +87,7 @@ export function ImageUploader({
             className="mx-auto"
           />
           <label
-                htmlFor="logo"
+                htmlFor={name}
                 className="cursor-pointer font-medium text-[#1F2937] hover:text-blue-500"
               >
                 Upload your file
@@ -123,9 +123,10 @@ export function ImageUploader({
             <button
               type="button"
               onClick={() => handleRemovePicture(index)}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5"
+              className="absolute top-2 right-2 z-10 rounded-full bg-gray-800 bg-opacity-50 p-1.5 text-white hover:bg-opacity-75"
+              aria-label="Remove image"
             >
-              <CloseIcon className="h-3 w-3" />
+              <CloseIcon />
             </button>
           </div>
         ))}

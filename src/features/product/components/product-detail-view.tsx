@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { ProductDetail } from "@/features/product/product.types";
 import { MorphTag } from "./morph-tag";
+import { PrimaryButton } from "@/components/ui/Button";
 
 // --- SVG Icons ---
 const BackIcon = () => (
@@ -262,12 +263,12 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
 
       <footer className="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200">
         <div className="container mx-auto max-w-md p-4">
-          <Link
+          <PrimaryButton
             href={`/farm/products/edit/${product.id}`}
-            className="block w-full rounded-lg bg-gray-800 py-3 text-center text-sm font-semibold text-white hover:bg-gray-700"
+            className="w-full" // Make the button full-width
           >
-            Edit Product
-          </Link>
+            Edit
+          </PrimaryButton>
         </div>
       </footer>
     </div>
