@@ -28,18 +28,14 @@ export function SearchBox() {
   }, [initialQuery]);
 
   useEffect(() => {
-    // Effect นี้จะทำงานเมื่อ debouncedValue (ค่าที่หน่วงเวลาแล้ว) เปลี่ยนแปลงเท่านั้น
     const params = new URLSearchParams(searchParams.toString());
 
-    // ถ้าค่าที่ค้นหาไม่ตรงกับใน URL ปัจจุบัน ให้ทำการ update
     if (debouncedValue) {
       params.set('q', debouncedValue);
     } else {
       params.delete('q');
     }
 
-    // ถ้ามีการเปลี่ยนแปลงค่าค้นหา ให้กลับไปหน้า 1 เสมอ
-    // ถ้าไม่มีการเปลี่ยนแปลง (debouncedValue === initialQuery) ก็ไม่ต้องเปลี่ยนหน้า
     if (debouncedValue !== initialQuery) {
         params.set('page', '1');
     }
@@ -48,7 +44,7 @@ export function SearchBox() {
         router.replace(`${pathname}?${params.toString()}`);
     });
 
-  }, [debouncedValue, initialQuery, pathname, router, searchParams]); // Dependency ที่ถูกต้อง
+  }, [debouncedValue, initialQuery, pathname, router, searchParams]);
 
   return (
     <div className="relative">

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useCallback } from "react";
+import { Suspense, useCallback } from "react";
 import type { ProductsPageData } from "@/features/product/product.types";
 import { ProductTable } from "./product-table";
 import { SearchBox } from "./search-box";
@@ -116,7 +116,9 @@ export function ProductListView({ data }: { data: ProductsPageData }) {
               />
             </div>
             <div className="mt-4">
-              <SearchBox />
+              <Suspense fallback={<div>Loading search...</div>}>
+                <SearchBox />
+              </Suspense>
             </div>
             <div className="mt-2">
               {products.length === 0 ? (

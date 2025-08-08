@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getFarmData } from '@/features/farm/farm.services';
 import { EditFarmView } from '@/features/farm/components/edit-farm-view';
+import { Suspense } from 'react';
 
 export default async function EditFarmPage() {
   const farm = await getFarmData();
@@ -9,5 +10,9 @@ export default async function EditFarmPage() {
     redirect('/farm/create');
   }
   
-  return <EditFarmView farm={farm} />;
+  return (
+      <Suspense fallback={<div>Loading page...</div>}>
+        <EditFarmView farm={farm} />;
+      </Suspense>
+    );
 }

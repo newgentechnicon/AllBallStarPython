@@ -5,6 +5,7 @@ import "@/styles/globals.css";
 import PrelineProvider from '@/components/PrelineProvider';
 import { AuthProvider } from '@/context/AuthContext';
 import "toastify-js/src/toastify.css";
+import { Suspense } from "react";
 
 // 2. สร้าง instance ของฟอนต์ Inter และกำหนด CSS Variable
 const inter = Inter({
@@ -24,16 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* 3. นำตัวแปรฟอนต์มาใช้งานกับ body */}
       <body className={`${inter.variable}`}>
-        <AuthProvider>
+        <Suspense fallback={null}>
+          <AuthProvider>
           <PrelineProvider>{children}</PrelineProvider>
-          {/* {children} */}
         </AuthProvider>
+        </Suspense>
+        
       </body>
-      {/* <script src="./assets/vendor/jquery/dist/jquery.min.js" async />
-      <script src="./assets/vendor/datatables.net/js/dataTables.min.js" async /> */}
-      {/* <PrelineScriptWrapper /> */}
     </html>
   );
 }
