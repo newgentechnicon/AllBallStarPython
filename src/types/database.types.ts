@@ -20,6 +20,7 @@ export type Database = {
           contact_facebook: string | null
           contact_instagram: string | null
           contact_line: string | null
+          contact_wechat: string | null
           contact_whatsapp: string | null
           created_at: string | null
           id: number
@@ -34,9 +35,10 @@ export type Database = {
           contact_facebook?: string | null
           contact_instagram?: string | null
           contact_line?: string | null
+          contact_wechat?: string | null
           contact_whatsapp?: string | null
           created_at?: string | null
-          id?: never
+          id?: number
           information?: string | null
           logo_url?: string | null
           name: string
@@ -48,9 +50,10 @@ export type Database = {
           contact_facebook?: string | null
           contact_instagram?: string | null
           contact_line?: string | null
+          contact_wechat?: string | null
           contact_whatsapp?: string | null
           created_at?: string | null
-          id?: never
+          id?: number
           information?: string | null
           logo_url?: string | null
           name?: string
@@ -182,6 +185,7 @@ export type Database = {
           image_urls: string[] | null
           name: string
           price: number | null
+          product_id: string | null
           sex: string | null
           status: string
           updated_at: string | null
@@ -197,6 +201,7 @@ export type Database = {
           image_urls?: string[] | null
           name: string
           price?: number | null
+          product_id?: string | null
           sex?: string | null
           status?: string
           updated_at?: string | null
@@ -212,6 +217,7 @@ export type Database = {
           image_urls?: string[] | null
           name?: string
           price?: number | null
+          product_id?: string | null
           sex?: string | null
           status?: string
           updated_at?: string | null

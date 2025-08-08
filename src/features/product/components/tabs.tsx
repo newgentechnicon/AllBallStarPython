@@ -14,27 +14,36 @@ interface TabsProps {
 
 export function Tabs({ tabs, selectedTab, onSelect }: TabsProps) {
   return (
-    <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => onSelect(tab.key)}
-          className={`shrink-0 border-b-2 px-1 pb-4 text-sm font-medium ${
-            selectedTab === tab.key
-              ? 'border-sky-500 text-sky-600'
-              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-          }`}
-        >
-          {tab.label}
-          {tab.count > 0 && (
-            <span className={`ml-1.5 rounded-full px-2 py-0.5 text-xs font-semibold text-white ${
-                selectedTab === tab.key ? 'bg-sky-600' : 'bg-gray-400'
-            }`}>
-              {tab.count}
-            </span>
-          )}
-        </button>
-      ))}
-    </nav>
+    <div className="border-b border-gray-200 dark:border-neutral-700">
+      <nav className="flex gap-x-1" aria-label="Tabs">
+        {tabs.map((tab) => {
+          const isActive = selectedTab === tab.key;
+
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => onSelect(tab.key)}
+              className={`py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm whitespace-nowrap
+                ${isActive
+                  ? 'font-semibold border-neutral-600 text-neutral-600 dark:text-neutral-500'
+                  : 'border-transparent text-gray-500 hover:text-neutral-600 focus:outline-none dark:text-neutral-400 dark:hover:text-nuetral-500'
+                }`}
+            >
+              {tab.label}
+              <span
+                className={`ms-1 py-0.5 px-1.5 rounded-full text-xs font-medium
+                  ${isActive
+                    ? 'bg-neutral-600 text-white dark:bg-neutral-800 dark:text-white'
+                    : 'bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-300'
+                  }`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </div>
   );
 }

@@ -14,7 +14,7 @@ declare global {
     _: LoDashStatic;
     $: JQueryStatic;
     jQuery: JQueryStatic;
-    DataTable: any; // Using 'any' is simplest, or use DataTables.Api from @types/datatables.net
+    DataTable: DataTables.Api; // Using 'any' is simplest, or use DataTables.Api from @types/datatables.net
     Dropzone: typeof Dropzone;
     noUiSlider: typeof noUiSlider;
     VanillaCalendarPro: typeof VanillaCalendarPro;

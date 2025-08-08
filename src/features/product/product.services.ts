@@ -30,6 +30,8 @@ export async function getProductsPageData(
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
+  console.log('params.page:', params.page);
+
   // 3. ดึงข้อมูล "จำนวน" สำหรับ Tabs (ส่วนนี้ทำงานถูกต้องอยู่แล้ว)
   const fetchCount = async (status?: 'Available' | 'On Hold') => {
     let query = supabase
@@ -83,7 +85,9 @@ export async function getProductsPageData(
   return {
     farm,
     products: (data as ProductWithMorphs[]) || [],
+    // totalCount นี้จะเปลี่ยนไปตาม filter (status/search) ซึ่งถูกต้องแล้วสำหรับการคำนวณ totalPages
     totalCount: totalCount || 0,
+    // statusCounts ใช้สำหรับแสดงตัวเลขบนป้าย Tab แต่ละอัน
     statusCounts,
   };
 }
@@ -102,6 +106,7 @@ export async function getProductById(productId: number): Promise<ProductDetail |
       farms (name, logo_url),
       product_morphs (
         morphs (
+          id,
           name,
           morph_categories (name, color_hex),
           morph_sub_categories (name, color_hex)
@@ -132,4 +137,28 @@ export async function getStructuredMorphs() {
     return [];
   }
   return data;
+}
+
+export async function getAllProducts(): Promise<ProductWithMorphs[]> {
+  const supabase = await createClient();
+  
+  const { data: products, error } = await supabase
+    .from('products')
+    .select(`
+      *,
+      farms ( name ),
+      product_morphs (
+        morphs ( name )
+      )
+    `)
+    .eq('status', 'Available') // Only fetch available products
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all products:', error);
+    return [];
+  }
+  
+  return products as ProductWithMorphs[];
 }

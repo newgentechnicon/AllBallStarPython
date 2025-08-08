@@ -1,22 +1,23 @@
-"use client";
+import { Montserrat } from 'next/font/google';
+import { LandingView } from '@/features/landing/components/landing-view';
+import { getAllFarms } from '@/features/farm/farm.services'; // 👈 1. Import service ใหม่
 
-// 1. Import คอมโพเนนต์ PrelineSelect ที่เราสร้างขึ้น
-// เราไม่จำเป็นต้องใช้ useEffect หรือ usePathname ในหน้านี้อีกต่อไป
-import PrelineSelect from '@/components/common/PrelineSelect';
+// Setup the font for the page
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  variable: '--font-montserrat',
+});
 
-export default function Home() {
+// 2. เปลี่ยน Page ให้เป็น async
+export default async function HomePage() {
+  // 3. ดึงข้อมูลฟาร์ม
+  const farms = await getAllFarms();
+
   return (
-    <div className="bg-slate-900 flex items-center justify-center min-h-screen p-4">
-      
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
-        
-        {/* หัวข้อ */}
-        <h1 className="text-2xl font-bold text-gray-800 text-center">
-          ฟอร์มตัวอย่าง
-        </h1>
-        <PrelineSelect />
-        
-      </div>
+    <div className={montserrat.variable}>
+      {/* 4. ส่งข้อมูลฟาร์มไปเป็น props */}
+      <LandingView farms={farms} />
     </div>
   );
 }

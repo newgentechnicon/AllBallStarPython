@@ -21,6 +21,7 @@ const createFarmSchema = z.object({
   contact_facebook: z.string().optional(),
   contact_line: z.string().optional(),
   contact_whatsapp: z.string().optional(),
+  contact_wechat: z.string().optional(),
 });
 
 // Schema สำหรับการแก้ไขฟาร์ม (โลโก้ไม่บังคับ)

@@ -4,8 +4,13 @@ import type { Farm } from '@/features/farm/farm.types';
 // สร้าง Type ของ Product จาก `Tables<'products'>`
 // และเพิ่มความสัมพันธ์ของ morphs ที่เราต้องการ query
 export type ProductWithMorphs = Tables<'products'> & {
+  farms: {
+    name: string;
+  } | null;
   product_morphs: Array<{
-    morphs: Tables<'morphs'> | null;
+    morphs: {
+      name: string;
+    } | null;
   }>;
 };
 
@@ -33,6 +38,7 @@ export interface CreateProductState {
   success?: boolean;
   message?: string;
   errors: {
+    product_id?: string[];
     name?: string[];
     price?: string[];
     sex?: string[];

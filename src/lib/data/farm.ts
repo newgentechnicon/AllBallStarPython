@@ -10,11 +10,12 @@ export interface Farm {
   name: string;
   breeder_name: string;
   logo_url: string | null;
-  information: string | null; // 👈 เพิ่ม
-  contact_instagram: string | null; // 👈 เพิ่ม
-  contact_facebook: string | null; // 👈 เพิ่ม
-  contact_line: string | null; // 👈 เพิ่ม
-  contact_whatsapp: string | null; // 👈 เพิ่ม
+  information: string | null;
+  contact_instagram: string | null;
+  contact_facebook: string | null;
+  contact_line: string | null;
+  contact_whatsapp: string | null;
+  contact_wechat: string | null;
 }
 
 // 2. สร้างฟังก์ชันสำหรับดึงข้อมูลฟาร์ม

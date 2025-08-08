@@ -24,6 +24,22 @@ export async function getFarmData(): Promise<Farm | null> {
   return farm;
 }
 
+export async function getAllFarms(): Promise<Pick<Farm, 'id' | 'name' | 'logo_url' | 'information' | 'breeder_name' | 'contact_instagram' | 'contact_facebook' | 'contact_line' | 'contact_whatsapp' | 'contact_wechat'>[]> {
+  const supabase = await createClient();
+  
+  const { data: farms, error } = await supabase
+    .from('farms')
+    .select('id, name, logo_url, information, breeder_name, contact_instagram, contact_facebook, contact_line, contact_whatsapp, contact_wechat')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all farms:', error);
+    return [];
+  }
+  
+  return farms;
+}
+
 export async function checkIfUserHasFarm(): Promise<boolean> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { checkIfUserHasFarm } from '@/features/farm/farm.services';
 import { CreateFarmView } from '@/features/farm/components/create-farm-view';
+import { Suspense } from 'react';
 
 export default async function CreateFarmPage() {
   const hasFarm = await checkIfUserHasFarm();
@@ -9,5 +10,9 @@ export default async function CreateFarmPage() {
     redirect('/farm');
   }
 
-  return <CreateFarmView />;
+  return (
+    <Suspense fallback={<div>Loading page...</div>}>
+      <CreateFarmView />;
+    </Suspense>
+  );
 }

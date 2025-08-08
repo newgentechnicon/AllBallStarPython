@@ -6,10 +6,10 @@ import { useAppToast } from '@/hooks/useAppToast';
 
 const statusOptions = ['Available', 'On Hold', 'Sold Out', 'Inactive'];
 const productStatustyles: { [key: string]: string } = {
-  Available: 'bg-green-100 text-green-800',
-  'On Hold': 'bg-yellow-100 text-yellow-800',
-  'Sold Out': 'bg-gray-600 text-white',
-  Inactive: 'bg-gray-200 text-gray-800',
+  Available: 'bg-emerald-500 text-white',
+  'On Hold': 'bg-amber-500 text-white',
+  'Sold Out': 'bg-neutral-600 text-white',
+  Inactive: 'bg-neutral-400 text-white',
 };
 
 interface StatusDropdownProps {
@@ -39,7 +39,7 @@ export function StatusDropdown({ productId, currentStatus }: StatusDropdownProps
       <button
         id={`hs-dropdown-${productId}`}
         type="button"
-        className={`hs-dropdown-toggle inline-flex items-center gap-x-2 text-xs font-semibold rounded-full px-2.5 py-1 ${colorClass}`}
+        className={`hs-dropdown-toggle inline-flex items-center gap-x-2 text-xs rounded-full px-2.5 py-1 ${colorClass}`}
         disabled={isPending}
       >
         {currentStatus}

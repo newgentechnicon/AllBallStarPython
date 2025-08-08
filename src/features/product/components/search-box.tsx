@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useDebounce } from 'use-debounce';
 
 const SearchIcon = ({ ...props }) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -16,6 +17,8 @@ export function SearchBox() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const [inputValue, setInputValue] = useState(initialQuery);
+  // ใช้ useDebounce เพื่อรอ 500ms หลังจาก user หยุดพิมพ์
+  const [debouncedValue] = useDebounce(inputValue, 500);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -25,21 +28,23 @@ export function SearchBox() {
   }, [initialQuery]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams);
-      if (inputValue) {
-        params.set('q', inputValue);
-      } else {
-        params.delete('q');
-      }
-      params.set('page', '1');
-      startTransition(() => {
-        router.replace(`${pathname}?${params.toString()}`);
-      });
-    }, 500);
+    const params = new URLSearchParams(searchParams.toString());
 
-    return () => clearTimeout(timer);
-  }, [inputValue, pathname, router, searchParams]);
+    if (debouncedValue) {
+      params.set('q', debouncedValue);
+    } else {
+      params.delete('q');
+    }
+
+    if (debouncedValue !== initialQuery) {
+        params.set('page', '1');
+    }
+
+    startTransition(() => {
+        router.replace(`${pathname}?${params.toString()}`);
+    });
+
+  }, [debouncedValue, initialQuery, pathname, router, searchParams]);
 
   return (
     <div className="relative">

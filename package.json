@@ -11,6 +11,7 @@
   "dependencies": {
     "@preline/carousel": "^3.1.0",
     "@preline/combobox": "^3.1.0",
+    "@preline/datatable": "^3.2.0",
     "@preline/overlay": "^3.1.0",
     "@preline/scroll-nav": "^3.1.0",
     "@preline/select": "^3.1.0",
@@ -21,6 +22,8 @@
     "@tailwindcss/postcss": "^4.1.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "datatables.net-dt": "^2.3.2",
+    "jquery": "^3.7.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.525.0",
     "next": "15.4.1",
@@ -31,6 +34,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
     "toastify-js": "^1.12.0",
+    "use-debounce": "^10.0.5",
     "zod": "^4.0.5"
   },
   "devDependencies": {
@@ -46,7 +50,7 @@
     "@types/toastify-js": "^1.12.4",
     "eslint": "^9",
     "eslint-config-next": "15.4.1",
-    "supabase": "^2.31.8",
+    "supabase": "^2.33.9",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5"
   }

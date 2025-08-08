@@ -1,11 +1,22 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { type ChangeEvent, useRef } from 'react';
+import Image from "next/image";
+import { type ChangeEvent, useRef } from "react";
 
 // --- SVG Icon ---
 const CloseIcon = ({ ...props }) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="18" y1="6" x2="6" y2="18"></line>
     <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
@@ -41,10 +52,10 @@ export function ImageUploader({
         if (inputRef.current) inputRef.current.value = "";
         return;
       }
-      
+
       onFilesAdded(newFiles);
 
-      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
       onPreviewsChange([...previews, ...newPreviews]);
       if (inputRef.current) inputRef.current.value = "";
     }
@@ -58,14 +69,34 @@ export function ImageUploader({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
         Product Picture* ({previews.length}/{maxFiles})
       </label>
-      <div className={`mt-1 flex justify-center rounded-md border-2 border-dashed px-6 pt-5 pb-6 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+      <div
+        className={`mt-1 flex justify-center rounded-md border-2 border-dashed px-6 pt-5 pb-6 ${
+          error ? "border-red-500" : "border-gray-300"
+        }`}
+      >
         <div className="space-y-1 text-center">
-          <label htmlFor={name} className="cursor-pointer">
-            <p className="text-blue-600 hover:underline">Upload your files here</p>
-          </label>
+          <Image
+            src="/images/upload-icon.png"
+            alt="upload"
+            width={70}
+            height={45}
+            quality={100}
+            className="mx-auto"
+          />
+          <label
+                htmlFor="logo"
+                className="cursor-pointer font-medium text-[#1F2937] hover:text-blue-500"
+              >
+                Upload your file
+                <p className="text-sm font-medium text-neutral-500">
+                  File size: 4:3
+                  <br />
+                  Maximum size: 5MB
+                </p>
+              </label>
           <input
             ref={inputRef}
             id={name}
@@ -77,14 +108,18 @@ export function ImageUploader({
             accept="image/*"
             disabled={previews.length >= maxFiles}
           />
-          <p className="text-xs text-gray-500">Maximum size: 5MB</p>
         </div>
       </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       <div className="mt-2 grid grid-cols-3 gap-2">
         {previews.map((preview, index) => (
           <div key={preview} className="relative aspect-square">
-            <Image src={preview} alt={`preview ${index}`} layout="fill" className="object-cover rounded-lg" />
+            <Image
+              src={preview}
+              alt={`preview ${index}`}
+              layout="fill"
+              className="object-cover rounded-lg"
+            />
             <button
               type="button"
               onClick={() => handleRemovePicture(index)}

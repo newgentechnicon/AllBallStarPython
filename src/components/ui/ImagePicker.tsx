@@ -1,10 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useRef } from 'react';
-import Image from 'next/image';
+import { useState, useRef } from "react";
+import Image from "next/image";
 
 const CloseIcon = ({ ...props }) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="3"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="18" y1="6" x2="6" y2="18"></line>
     <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
@@ -16,7 +27,10 @@ interface ImagePickerProps {
   initialPreview?: string | null;
 }
 
-export function ImagePicker({ error, initialPreview = null }: ImagePickerProps) {
+export function ImagePicker({
+  error,
+  initialPreview = null,
+}: ImagePickerProps) {
   // 2. ใช้ initialPreview เป็นค่าเริ่มต้นของ State
   const [preview, setPreview] = useState<string | null>(initialPreview);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,20 +48,29 @@ export function ImagePicker({ error, initialPreview = null }: ImagePickerProps) 
     e.preventDefault();
     setPreview(null);
     if (inputRef.current) {
-      inputRef.current.value = '';
+      inputRef.current.value = "";
     }
   };
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Farm Logo*</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Farm Logo*
+      </label>
       <div
-        className={`relative w-full overflow-hidden rounded-lg border-2 border-dashed ${error ? 'border-red-500' : 'border-gray-300'}`}
-        style={{ aspectRatio: '1 / 1' }}
+        className={`relative w-full overflow-hidden rounded-lg border-2 border-dashed ${
+          error ? "border-red-500" : "border-gray-300"
+        }`}
+        style={{ aspectRatio: "1 / 1" }}
       >
         {preview ? (
           <>
-            <Image src={preview} alt="Logo preview" layout="fill" className="object-cover" />
+            <Image
+              src={preview}
+              alt="Logo preview"
+              layout="fill"
+              className="object-cover"
+            />
             <button
               onClick={handleRemoveImage}
               className="absolute top-2 right-2 z-10 rounded-full bg-gray-800 bg-opacity-50 p-1.5 text-white hover:bg-opacity-75"
@@ -57,16 +80,31 @@ export function ImagePicker({ error, initialPreview = null }: ImagePickerProps) 
             </button>
           </>
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gray-50 dark:bg-neutral-900">
-            <div className="text-center">
-              <label htmlFor="logo" className="cursor-pointer font-medium text-blue-600 hover:text-blue-500">
+          <div className="flex h-full w-full items-center justify-center">
+            <div className="text-center justify-center">
+              <Image
+                src="/images/upload-icon.png"
+                alt="upload"
+                width={70}
+                height={45}
+                quality={100}
+                className="mx-auto"
+              />
+              <label
+                htmlFor="logo"
+                className="cursor-pointer font-medium text-[#1F2937] hover:text-blue-500"
+              >
                 Upload your file
-                <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 5MB</p>
+                <p className="text-sm font-medium text-neutral-500">
+                  File size: 1:1
+                  <br />
+                  Maximum size: 50MB
+                </p>
               </label>
             </div>
           </div>
         )}
-        
+
         <input
           ref={inputRef}
           id="logo"
