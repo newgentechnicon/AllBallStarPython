@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState, useMemo } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateProductAction } from "@/features/product/product.actions";
 import type {
@@ -10,65 +10,13 @@ import type {
 import { useAppToast } from "@/hooks/useAppToast";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { Button } from "@/components/ui/Button";
-import type { Tables } from "@/types/database.types";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-
-type Morph = Tables<"morphs">;
-type MorphSubCategory = {
-  id: number;
-  name: string;
-  color_hex?: string | null;
-  morphs?: Morph[];
-};
-type MorphCategory = {
-  id: number;
-  name: string;
-  color_hex: string | null;
-  morphs: Morph[];
-  sub_categories: MorphSubCategory[];
-};
-
-type SelectedMorph = {
-  id: number;
-  name: string;
-  color_hex: string;
-};
-
-const PlusIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
-  </svg>
-);
-
-const CloseIcon = ({ ...props }) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {" "}
-    <line x1="18" y1="6" x2="6" y2="18"></line>{" "}
-    <line x1="6" y1="6" x2="18" y2="18"></line>{" "}
-  </svg>
-);
+import {
+  MorphSelector,
+  type SelectedMorph,
+  type Morph,
+  type MorphCategory,
+} from "./morph-selector";
 
 interface EditProductViewProps {
   product: ProductDetail;
@@ -84,32 +32,12 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
 
   const [newPictures, setNewPictures] = useState<File[]>([]);
   const [picturePreviews, setPicturePreviews] = useState<string[]>([]);
-  const [searchText, setSearchText] = useState("");
-  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const [description, setDescription] = useState(
     product.description ?? ''
   );
 
-  const [selectedMorphs, setSelectedMorphs] = useState<SelectedMorph[]>(() => {
-    return product.product_morphs
-      .map((pm) => {
-        const morph = pm.morphs;
-        if (!morph) return null;
-
-        const color: string =
-          morph.morph_sub_categories?.color_hex ??
-          morph.morph_categories?.color_hex ??
-          "#9CA3AF";
-
-        return {
-          id: morph.id,
-          name: morph.name,
-          color_hex: color,
-        };
-      })
-      .filter((item): item is SelectedMorph => item !== null);
-  });
+  const [selectedMorphs, setSelectedMorphs] = useState<SelectedMorph[]>([]);
 
   useEffect(() => {
     setPicturePreviews(product.image_urls || []);
@@ -127,8 +55,8 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
         return {
           id: morph.id,
           name: morph.name,
-          color_hex: color,
-        };
+          color_hex: color as string,
+        } as SelectedMorph;
       })
       .filter((item): item is SelectedMorph => item !== null);
 
@@ -186,7 +114,13 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
 
       setSelectedMorphs([
         ...selectedMorphs,
-        { id: morph.id, name: morph.name, color_hex },
+        {
+          id: morph.id,
+          name: morph.name,
+          color_hex,
+          category_id: morph.category_id ?? null,
+          sub_category_id: morph.sub_category_id ?? null,
+        },
       ]);
     }
   };
@@ -194,40 +128,6 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
   const handleRemoveMorph = (morphToRemove: SelectedMorph) => {
     setSelectedMorphs(selectedMorphs.filter((m) => m.id !== morphToRemove.id));
   };
-
-  const filteredCategories = useMemo(() => {
-    const text = searchText.toLowerCase();
-    const selectedIds = new Set(selectedMorphs.map((m) => m.id));
-    const result: MorphCategory[] = [];
-
-    for (const cat of allMorphs) {
-      const matchedMorphs = (cat.morphs ?? []).filter(
-        (m: Morph) =>
-          (!text || m.name.toLowerCase().includes(text)) &&
-          !selectedIds.has(m.id)
-      );
-      const matchedSubs = (cat.sub_categories ?? [])
-        .map((sub: MorphSubCategory) => ({
-          ...sub,
-          morphs: (sub.morphs ?? []).filter(
-            (m: Morph) =>
-              (!text || m.name.toLowerCase().includes(text)) &&
-              !selectedIds.has(m.id)
-          ),
-        }))
-        .filter((sub) => sub.morphs && sub.morphs.length > 0);
-
-      if (matchedMorphs.length > 0 || matchedSubs.length > 0) {
-        result.push({
-          ...cat,
-          morphs: matchedMorphs,
-          sub_categories: matchedSubs,
-        });
-      }
-    }
-
-    return result;
-  }, [searchText, allMorphs, selectedMorphs]);
 
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
@@ -313,131 +213,13 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Genetics (Morphs)*
-            </label>
-            {selectedMorphs.length > 0 && (
-              <div
-              className={`flex flex-wrap gap-2 rounded-lg border p-2 min-h-[4rem] ${
-                state.errors.morphs ? "border-red-500" : "border-gray-300"
-              }`}
-            >
-              {selectedMorphs.map((morph) => (
-                <div
-                  key={morph.id}
-                  className="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm font-medium text-gray-700"
-                >
-                  <input type="hidden" name="morphs" value={morph.id} />
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: morph.color_hex }}
-                  ></span>
-                  <span>{morph.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMorph(morph)}
-                  >
-                    <CloseIcon className="h-3 w-3 text-gray-500 hover:text-gray-800" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            )}
-            
-            {state.errors.morphs && (
-              <p className="mt-1 text-sm text-red-600">
-                {state.errors.morphs[0]}
-              </p>
-            )}
-            <div className="relative w-full mt-2">
-              <input
-                type="text"
-                placeholder="Add"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onFocus={() => setIsInputFocused(true)}
-                onBlur={() => setTimeout(() => setIsInputFocused(false), 150)}
-                className="py-2.5 ps-4 pe-10 block w-full border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-              <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none text-gray-400">
-                <PlusIcon />
-              </div>
-              {isInputFocused && (
-                <div className="absolute z-50 w-full max-h-72 mt-1 p-1 bg-white border border-gray-200 rounded-lg overflow-y-auto shadow">
-                  {filteredCategories.length === 0 && (
-                    <div className="px-4 py-2 text-sm text-gray-500">
-                      No results found.
-                    </div>
-                  )}
-                  {filteredCategories.map((category) => (
-                  <div key={category.id}>
-                    <div className="flex items-center gap-x-2 px-3 py-2">
-                      <span
-                        className="font-semibold text-sm"
-                        style={{ color: "#9CA3AF" }}
-                      >
-                        {category.name}
-                      </span>
-                      <span className="flex-grow border-t border-dashed border-gray-300 dark:border-neutral-700"></span>
-                    </div>
-                    {(category.morphs ?? []).map((morph) => (
-                      <button
-                        type="button"
-                        key={morph.id}
-                        onClick={() => {
-                          handleAddMorph(morph);
-                          setSearchText("");
-                        }}
-                        className="flex items-center gap-x-2 w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
-                      >
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{
-                            backgroundColor: category.color_hex ?? "#9CA3AF",
-                          }}
-                        ></span>
-                        <span>{morph.name}</span>
-                      </button>
-                    ))}
-                    {(category.sub_categories ?? []).map((sub) => (
-                      <div key={sub.id} className="pl-3">
-                        <div className="flex items-center gap-x-2 px-3 py-1">
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: "#9CA3AF" }}
-                          >
-                            {sub.name}
-                          </span>
-                          <span className="flex-grow border-t border-dashed border-gray-300 dark:border-neutral-700"></span>
-                        </div>
-                        {(sub.morphs ?? []).map((morph) => (
-                          <button
-                            type="button"
-                            key={morph.id}
-                            onClick={() => {
-                              handleAddMorph(morph);
-                              setSearchText("");
-                            }}
-                            className="flex items-center gap-x-2 w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
-                          >
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{
-                                backgroundColor: sub.color_hex ?? "#9CA3AF",
-                              }}
-                            ></span>
-                            <span>{morph.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <MorphSelector
+            allMorphs={allMorphs}
+            selectedMorphs={selectedMorphs}
+            onAddMorph={handleAddMorph}
+            onRemoveMorph={handleRemoveMorph}
+            error={state.errors.morphs?.[0]}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
