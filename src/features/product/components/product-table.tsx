@@ -8,7 +8,7 @@ import { softDeleteProduct } from "@/features/product/product.actions";
 import type { ProductWithMorphs } from "@/features/product/product.types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { Pagination } from "./pagination";
-import { DeleteProductModal } from "./DeleteProductModal";
+import { DeleteProductModal } from "./delete-product-modal";
 
 declare global {
   interface Window {
