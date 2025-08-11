@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function Navbar() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between py-4 px-6 bg-black sm:bg-black/50 backdrop-blur-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between py-4 px-6 bg-white border-b border-[#E5E7EB]">
       <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
         <div className="flex items-center justify-between">
           <a
@@ -11,17 +11,18 @@ export function Navbar() {
             aria-label="Brand"
           >
             <Image
-              src="/images/logo-black.png"
+              src="/images/logo-white.png"
               alt="Company Logo"
-              width={40}
-              height={40}
+              width={100}
+              height={100}
               quality={100}
+              className="w-10 h-10"
             />
           </a>
           <div className="sm:hidden">
             <button
               type="button"
-              className="hs-collapse-toggle relative size-9 flex justify-center items-center gap-x-2 text-white shadow-2xs hover:text-gay-200"
+              className="hs-collapse-toggle relative size-9 flex justify-center items-center gap-x-2 text-black shadow-2xs hover:text-gay-200"
               id="hs-navbar-example-collapse"
               aria-expanded="false"
               aria-controls="hs-navbar-example"

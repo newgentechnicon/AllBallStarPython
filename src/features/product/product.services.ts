@@ -162,3 +162,31 @@ export async function getAllProducts(): Promise<ProductWithMorphs[]> {
   
   return products as ProductWithMorphs[];
 }
+
+/**
+ * Fetches data required for the shop filter options.
+ */
+export async function getShopFilterData() {
+  const supabase = await createClient();
+  
+  // Fetch distinct breeders (farms)
+  const { data: breeders, error: breedersError } = await supabase
+    .from('farms')
+    .select('id, name');
+
+  // Fetch distinct years from products
+  const { data: yearsData, error: yearsError } = await supabase
+    .from('products')
+    .select('year')
+    .is('deleted_at', null);
+
+  if (breedersError || yearsError) {
+    console.error("Error fetching filter data:", breedersError || yearsError);
+    return { breeders: [], years: [] };
+  }
+
+  // Get unique, non-null years and sort them
+  const years = [...new Set(yearsData.map(p => p.year).filter(Boolean))].sort((a, b) => b.localeCompare(a));
+
+  return { breeders: breeders || [], years };
+}
