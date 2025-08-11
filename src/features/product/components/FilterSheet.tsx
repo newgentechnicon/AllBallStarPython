@@ -1,8 +1,10 @@
 'use client';
 
-import { PrimaryButton, SecondaryButton } from "@/components/ui/Button";
+import { useEffect, useState } from "react";
+import { MorphSelector, SelectedMorph as SingleSelectedMorph, MorphCategory, Morph } from "./morph-selector";
+// import { BulkMorphSelector } from "./BulkMorphSelector";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
-// Define the shape of the data needed for filters
 interface FilterData {
     breeders: { id: number; name: string }[];
     years: string[];
@@ -12,16 +14,89 @@ interface FilterSheetProps {
     isOpen: boolean;
     onClose: () => void;
     filterData: FilterData;
+    allMorphs: MorphCategory[];
 }
 
 // SVG Icons for checkboxes
 const MaleIcon = () => ( <svg xmlns="http://www.w.3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-blue-500"><circle cx="12" cy="10" r="4"></circle><path d="M12 14v7m-3-3h6"></path></svg> );
 const FemaleIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-pink-500"><circle cx="10" cy="7" r="4"></circle><path d="M10 11v10m-3-3h6"></path></svg> );
-const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-gray-400"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> );
-const CloseIcon = () => ( <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg> );
 
+export function FilterSheet({ isOpen, onClose, filterData, allMorphs }: FilterSheetProps) {
 
-export function FilterSheet({ isOpen, onClose, filterData }: FilterSheetProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const [filters, setFilters] = useState({
+        sex: [] as string[],
+        breeders: [] as string[],
+        years: [] as string[],
+        productStatus: [] as string[],
+        morphs: [] as string[],
+    });
+
+    useEffect(() => {
+
+        const initialFilters = {
+            sex: searchParams.getAll('sex'),
+            breeders: searchParams.getAll('breeders'),
+            years: searchParams.getAll('years'),
+            productStatus: searchParams.getAll('productStatus'),
+            morphs: searchParams.getAll('morphs'),
+        };
+        setFilters(initialFilters);
+
+        const initialMorphs = initialFilters.morphs.map(id => {
+            for (const cat of allMorphs) {
+                const found = cat.morphs?.find((m: Morph) => m.id === Number(id));
+                if (found) return { ...found, color_hex: cat.color_hex ?? '#ccc' };
+                for (const sub of cat.sub_categories ?? []) {
+                    const foundInSub = sub.morphs?.find((m: Morph) => m.id === Number(id));
+                    if (foundInSub) return { ...foundInSub, color_hex: sub.color_hex ?? '#ccc' };
+                }
+            }
+            return null;
+        }).filter((m): m is SingleSelectedMorph => m !== null);
+        setSelectedMorphsUI(initialMorphs);
+
+    }, [searchParams, allMorphs]);
+
+    const handleApplyFilters = () => {
+        const params = new URLSearchParams(searchParams);
+        Object.keys(filters).forEach(key => {
+            params.delete(key);
+            const values = filters[key as keyof typeof filters];
+            values.forEach(value => params.append(key, value));
+        });
+
+        router.push(`${pathname}?${params.toString()}`);
+        onClose();
+    };
+
+    // const [selectedMorphs, setSelectedMorphs] = useState<SingleSelectedMorph[]>([]);
+    const [selectedMorphsUI, setSelectedMorphsUI] = useState<SingleSelectedMorph[]>([]);
+
+    const handleAddMorph = (morph: Morph) => {
+        if (!selectedMorphsUI.find(m => m.id === morph.id)) {
+            const color_hex = '#ccc';
+            setSelectedMorphsUI(prev => [...prev, { ...morph, color_hex }]);
+            setFilters(prev => ({ ...prev, morphs: [...prev.morphs, String(morph.id)] }));
+        }
+    };
+
+    // const handleAddMultipleMorphs = (morphsToAdd: Morph[]) => {
+    //     const newMorphs = morphsToAdd.filter(
+    //         addMorph => !selectedMorphs.some(selMorph => selMorph.id === addMorph.id)
+    //     ).map(morph => ({ ...morph, color_hex: '#ccc' })); // Add default color
+
+    //     setSelectedMorphs(prev => [...prev, ...newMorphs]);
+    // };
+
+    const handleRemoveMorph = (morphToRemove: SingleSelectedMorph) => {
+        setSelectedMorphsUI(prev => prev.filter(m => m.id !== morphToRemove.id));
+        setFilters(prev => ({ ...prev, morphs: prev.morphs.filter(id => id !== String(morphToRemove.id)) }));
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -34,7 +109,7 @@ export function FilterSheet({ isOpen, onClose, filterData }: FilterSheetProps) {
             >
                 <h2 className="text-xl font-bold text-center text-black uppercase mb-8">Select Filter</h2>
 
-                <form className="space-y-6 flex-grow">
+                <form className="space-y-6 flex-grow overflow-y-auto pr-4">
                     {/* Price Range */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-800 mb-2">Price Range</label>
@@ -50,11 +125,11 @@ export function FilterSheet({ isOpen, onClose, filterData }: FilterSheetProps) {
                         <label className="block text-sm font-semibold text-gray-800 mb-2">Sex</label>
                         <div className="space-y-3">
                             <div className="flex items-center">
-                                <input id="sex-male" type="checkbox" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                <input id="sex-male" type="checkbox" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={filters.sex.includes('Male')} onChange={(e) => {setFilters(prev => ({...prev, sex: e.target.checked? [...prev.sex, 'Male']: prev.sex.filter(s => s !== 'Male')}));}}/>
                                 <label htmlFor="sex-male" className="ml-3 flex items-center gap-2 text-sm text-gray-800"><MaleIcon /> Male</label>
                             </div>
                             <div className="flex items-center">
-                                <input id="sex-female" type="checkbox" className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500" />
+                                <input id="sex-female" type="checkbox" className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500" checked={filters.sex.includes('Female')} onChange={(e) => {setFilters(prev => ({...prev, sex: e.target.checked? [...prev.sex, 'Female']: prev.sex.filter(s => s !== 'Female')}));}}/>
                                 <label htmlFor="sex-female" className="ml-3 flex items-center gap-2 text-sm text-gray-800"><FemaleIcon /> Female</label>
                             </div>
                         </div>
@@ -66,7 +141,9 @@ export function FilterSheet({ isOpen, onClose, filterData }: FilterSheetProps) {
                         <div className="space-y-3">
                             {filterData.breeders.map(breeder => (
                                 <div key={breeder.id} className="flex items-center">
-                                    <input id={`breeder-${breeder.id}`} type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                    {/* <input id={`breeder-${breeder.id}`} type="checkbox" className="h-4 w-4 rounded border-gray-300" /> */}
+                                    <input id={`breeder-${breeder.id}`} type="checkbox" className="h-4 w-4 rounded border-gray-300" checked={filters.breeders.includes(`${breeder.id}`)} onChange={(e) => {setFilters(prev => ({...prev, breeders: e.target.checked? [...prev.breeders, `${breeder.id}`]: prev.breeders.filter(s => s !== `${breeder.id}`)}));}}/>
+                                
                                     <label htmlFor={`breeder-${breeder.id}`} className="ml-3 text-sm text-gray-800">{breeder.name}</label>
                                 </div>
                             ))}
@@ -79,37 +156,50 @@ export function FilterSheet({ isOpen, onClose, filterData }: FilterSheetProps) {
                         <div className="space-y-3">
                              {filterData.years.map(year => (
                                 <div key={year} className="flex items-center">
-                                    <input id={`year-${year}`} type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                    <input id={`year-${year}`} type="checkbox" className="h-4 w-4 rounded border-gray-300" checked={filters.years.includes(`${year}`)} onChange={(e) => {setFilters(prev => ({...prev, years: e.target.checked? [...prev.years, `${year}`]: prev.years.filter(s => s !== `${year}`)}));}}/>
                                     <label htmlFor={`year-${year}`} className="ml-3 text-sm text-gray-800">{year}</label>
                                 </div>
                             ))}
                         </div>
                     </div>
                     
-                    {/* Morph */}
+                    {/* Morph Section */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-800 mb-2">Morph</label>
-                        <div className="relative">
-                            <input type="text" placeholder="Add" className="w-full rounded-lg border-gray-300 text-sm pr-10" />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <PlusIcon />
-                            </div>
-                        </div>
+                        <p className="text-sm font-semibold text-gray-800 mb-2">Morph (Single Add)</p>
+                        <MorphSelector
+                            allMorphs={allMorphs}
+                            selectedMorphs={selectedMorphsUI}
+                            onAddMorph={handleAddMorph}
+                            onRemoveMorph={handleRemoveMorph}
+                        />
                     </div>
-
+                    
+                    {/* <div>
+                        <p className="text-sm font-semibold text-gray-800 mb-2">Morph (Bulk Add on Enter)</p>
+                        <BulkMorphSelector
+                            allMorphs={allMorphs}
+                            selectedMorphs={selectedMorphs}
+                            onAddMorph={handleAddMorph}
+                            onAddMultipleMorphs={handleAddMultipleMorphs}
+                            onRemoveMorph={handleRemoveMorph}
+                        />
+                    </div> */}
+                    
                     {/* Status */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-800 mb-2">Status</label>
                         <div className="space-y-3">
                             <div className="flex items-center">
-                                <input id="status-available" type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                {/* <input id="status-available" type="checkbox" className="h-4 w-4 rounded border-gray-300" /> */}
+                                <input id="status-available" type="checkbox" className="h-4 w-4 rounded border-gray-300" checked={filters.productStatus.includes('Available')} onChange={(e) => {setFilters(prev => ({...prev, productStatus: e.target.checked? [...prev.productStatus, 'Available']: prev.productStatus.filter(s => s !== 'Available')}));}}/>
                                 <label htmlFor="status-available" className="ml-3 flex items-center gap-2 text-sm text-gray-800">
                                     <span className="h-3 w-3 bg-green-500 rounded-full"></span>
                                     Available
                                 </label>
                             </div>
                             <div className="flex items-center">
-                                <input id="status-onhold" type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                                {/* <input id="status-onhold" type="checkbox" className="h-4 w-4 rounded border-gray-300" /> */}
+                                <input id="status-onhold" type="checkbox" className="h-4 w-4 rounded border-gray-300" checked={filters.productStatus.includes('On Hold')} onChange={(e) => {setFilters(prev => ({...prev, productStatus: e.target.checked? [...prev.productStatus, 'On Hold']: prev.productStatus.filter(s => s !== 'On Hold')}));}}/>
                                 <label htmlFor="status-onhold" className="ml-3 flex items-center gap-2 text-sm text-gray-800">
                                     <span className="h-3 w-3 bg-yellow-500 rounded-full"></span>
                                     On Hold
@@ -121,8 +211,8 @@ export function FilterSheet({ isOpen, onClose, filterData }: FilterSheetProps) {
                 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-4 mt-auto pt-6">
-                    <SecondaryButton href="#" onClick={(e) => { e.preventDefault(); /* Logic การ Reset filter */ }}>Reset</SecondaryButton>
-                    <PrimaryButton href="#" onClick={(e) => { e.preventDefault(); onClose(); }}>Done</PrimaryButton>
+                    <button>Reset</button>
+                    <button onClick={handleApplyFilters}>Done</button>
                 </div>
             </div>
         </div>

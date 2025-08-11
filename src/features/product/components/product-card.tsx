@@ -60,15 +60,11 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const morphNames = product.product_morphs
-    .map((pm) => pm.morphs?.name)
-    .filter(Boolean)
-    .join(" ");
 
   return (
     <Link
       href={`/farm/products/${product.id}`}
-      className="group block max-w-41 max-h-69"
+      className="group block max-w-41 max-h-69 min-w-41 min-h-69"
     >
       <div className="rounded-xl border border-gray-200 bg-white p-2 shadow-sm transition-shadow hover:shadow-lg">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg">

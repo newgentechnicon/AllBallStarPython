@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { FilterSheet } from "./FilterSheet";
+import { MorphCategory } from "./morph-selector";
+import Link from "next/link";
 
 // SVG Icons
 const SearchIcon = () => (
@@ -42,9 +44,10 @@ interface FilterData {
 interface ShopHeaderProps {
   totalItems: number;
   filterData: FilterData;
+  allMorphs: MorphCategory[];
 }
 
-export function ShopHeader({ totalItems, filterData }: ShopHeaderProps) {
+export function ShopHeader({ totalItems, filterData, allMorphs }: ShopHeaderProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   return (
@@ -70,22 +73,25 @@ export function ShopHeader({ totalItems, filterData }: ShopHeaderProps) {
           <p className="text-sm text-gray-600">
             {totalItems.toLocaleString()} items
           </p>
-          <button
-            className="inline-flex items-center gap-x-2 rounded-lg border border-gray-300 bg-[#1F2937] px-4 py-2 text-sm font-medium text-white shadow-sm"
-            onClick={() => setIsFilterOpen(true)}
-          >
-            <FilterIcon />
-            Filter
+          <Link
+            className="items-center gap-x-2 rounded-lg border border-gray-300 bg-[#1F2937] px-4 py-2 shadow-sm"
+            onClick={() => setIsFilterOpen(true)} href={""}>
+            
+            <p className="inline-flex text-sm font-medium text-white gap-x-2 ">
+              <FilterIcon /> Filter
+            </p>
+            
             <span className="ml-1.5 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700">
               0
             </span>
-          </button>
+          </Link>
         </div>
       </div>
       <FilterSheet
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
         filterData={filterData}
+        allMorphs={allMorphs}
       />
     </>
   );

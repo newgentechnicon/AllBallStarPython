@@ -14,6 +14,7 @@
     "@preline/datatable": "^3.2.0",
     "@preline/overlay": "^3.1.0",
     "@preline/scroll-nav": "^3.1.0",
+    "@preline/scrollspy": "^3.2.3",
     "@preline/select": "^3.1.0",
     "@preline/tabs": "^3.1.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
