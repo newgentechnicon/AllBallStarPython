@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import type { ProductDetail } from "@/features/product/product.types";
 import { MorphTag } from "./morph-tag";
 import { PrimaryButton } from "@/components/ui/Button";

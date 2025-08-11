@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-800 py-6 text-start">
+    <footer className="border-t bg-neutral-950 border-gray-800 py-6 text-start">
       <div className="max-w-2xl mx-auto px-6">
         <Image
           src="/images/logo-black.png"
@@ -13,7 +13,7 @@ export function Footer() {
           quality={100}
           className="mb-4"
         />
-        <p className="text-gray-500 text-sm leading-relaxed mb-8">
+        <p className="text-[#D1D5DB] text-sm leading-relaxed mb-8">
           Founded in 2023, All Star Ball Python is a collective of seven
           passionate and dedicated ball python breeders united by a shared
           mission: to produce high-quality, healthy, and visually stunning morph

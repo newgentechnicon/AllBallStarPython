@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, KeyboardEvent } from "react";
 import type { Tables } from "@/types/database.types";
 
 // --- Type Definitions ---
 export type Morph = Tables<"morphs">;
-export type MorphSubCategory = Tables<"morph_sub_categories"> & { morphs: Morph[] };
-export type MorphCategory = Tables<"morph_categories"> & {
+type MorphSubCategory = Tables<"morph_sub_categories"> & { morphs: Morph[] };
+type MorphCategory = Tables<"morph_categories"> & {
   morphs: Morph[];
   sub_categories: MorphSubCategory[];
 };
-export type SelectedMorph = Morph & { id: number, name: string, color_hex: string };
+export type SelectedMorph = Morph & { color_hex?: string };
 
 // --- SVG Icons ---
 const PlusIcon = () => (
@@ -18,7 +18,7 @@ const PlusIcon = () => (
     xmlns="http://www.w3.org/2000/svg"
     width="24"
     height="24"
-    viewBox="0 0 24 24"
+    viewBox="0 0 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
@@ -52,14 +52,16 @@ interface MorphSelectorProps {
   allMorphs: MorphCategory[];
   selectedMorphs: SelectedMorph[];
   onAddMorph: (morph: Morph) => void;
+  onAddMultipleMorphs: (morphs: Morph[]) => void;
   onRemoveMorph: (morph: SelectedMorph) => void;
   error?: string;
 }
 
-export function MorphSelector({
+export function BulkMorphSelector({
   allMorphs,
   selectedMorphs,
   onAddMorph,
+  onAddMultipleMorphs,
   onRemoveMorph,
   error,
 }: MorphSelectorProps) {
@@ -72,17 +74,13 @@ export function MorphSelector({
     const result: MorphCategory[] = [];
     for (const cat of allMorphs) {
       const matchedMorphs = (cat.morphs ?? []).filter(
-        (m) =>
-          (!text || m.name.toLowerCase().includes(text)) &&
-          !selectedIds.has(m.id)
+        (m) => m.name.toLowerCase().includes(text) && !selectedIds.has(m.id)
       );
       const matchedSubs = (cat.sub_categories ?? [])
         .map((sub) => ({
           ...sub,
           morphs: (sub.morphs ?? []).filter(
-            (m) =>
-              (!text || m.name.toLowerCase().includes(text)) &&
-              !selectedIds.has(m.id)
+            (m) => m.name.toLowerCase().includes(text) && !selectedIds.has(m.id)
           ),
         }))
         .filter((sub) => sub.morphs.length > 0);
@@ -96,6 +94,24 @@ export function MorphSelector({
     }
     return result;
   }, [searchText, allMorphs, selectedMorphs]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchText.trim() !== "") {
+      e.preventDefault();
+
+      const allFilteredMorphs = filteredCategories.flatMap((cat) => [
+        ...cat.morphs,
+        ...cat.sub_categories.flatMap((sub) => sub.morphs),
+      ]);
+
+      if (allFilteredMorphs.length > 0) {
+        onAddMultipleMorphs(allFilteredMorphs);
+      }
+
+      setSearchText("");
+      e.currentTarget.blur();
+    }
+  };
 
   return (
     <div>
@@ -136,6 +152,7 @@ export function MorphSelector({
           onChange={(e) => setSearchText(e.target.value)}
           onFocus={() => setIsInputFocused(true)}
           onBlur={() => setTimeout(() => setIsInputFocused(false), 150)}
+          onKeyDown={handleKeyDown}
           className="py-2.5 ps-4 pe-10 block w-full border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500"
         />
         <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none text-gray-400">
