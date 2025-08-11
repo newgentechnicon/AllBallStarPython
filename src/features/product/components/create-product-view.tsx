@@ -31,7 +31,7 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
   const [state, formAction] = useActionState(createProductAction, initialState);
 
   const [description, setDescription] = useState(
-    (state.fields?.description as string) || ''
+    (state.fields?.description as string) || ""
   );
 
   // State for managing UI that isn't part of the form submission
@@ -47,15 +47,27 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
 
   const handleAddMorph = (morph: Morph) => {
     if (!selectedMorphs.find((m) => m.id === morph.id)) {
-      let color_hex: string | undefined;
+      let color_hex: string = "#9CA3AF";
       for (const cat of allMorphs) {
-        if (cat.morphs?.some((m) => m.id === morph.id)) { color_hex = cat.color_hex ?? undefined; break; }
+        if (cat.morphs?.some((m) => m.id === morph.id)) {
+          color_hex = cat.color_hex ?? "#9CA3AF";
+          break;
+        }
         for (const sub of cat.sub_categories ?? []) {
-          if (sub.morphs?.some((m) => m.id === morph.id)) { color_hex = sub.color_hex ?? undefined; break; }
+          if (sub.morphs?.some((m) => m.id === morph.id)) {
+            color_hex = sub.color_hex ?? "#9CA3AF";
+            break;
+          }
         }
         if (color_hex) break;
       }
-      setSelectedMorphs([...selectedMorphs, { ...morph, color_hex }]);
+      setSelectedMorphs([...selectedMorphs, {
+          id: morph.id,
+          name: morph.name,
+          color_hex,
+          category_id: morph.category_id ?? null,
+          sub_category_id: morph.sub_category_id ?? null,
+        },]);
     }
   };
 
