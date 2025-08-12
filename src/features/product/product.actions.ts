@@ -10,7 +10,6 @@ import type { CreateProductState, EditProductState } from './product.types';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-// ✅ 1. สร้าง Zod Schema ที่สมบูรณ์ขึ้น
 const productSchema = z.object({
   name: z.string().min(1, 'Product name is required.'),
   price: z.coerce.number().refine(val => typeof val === 'number' && !isNaN(val), { message: 'Price must be a number.' }).positive('Price must be positive.'),
@@ -18,13 +17,14 @@ const productSchema = z.object({
   year: z.string().min(1, 'Year is required.'),
   description: z.string().min(1, 'Description is required.'),
   morphs: z.preprocess((val) => (Array.isArray(val) ? val : [val]), z.array(z.string()).min(1, "At least one morph is required.")),
-  // ✅ 2. เพิ่ม Validation สำหรับรูปภาพ
-  images: z.preprocess((val) => (Array.isArray(val) ? val : [val]), 
-    z.array(z.instanceof(File))
-     .min(1, "At least one image is required.")
-     .refine((files) => files.every(file => file.size <= MAX_FILE_SIZE), `Max file size is 5MB.`)
-     .refine((files) => files.every(file => ACCEPTED_IMAGE_TYPES.includes(file.type)), '.jpg, .jpeg, .png and .webp files are accepted.')
-  ),
+  images: z.preprocess((val) => {
+  const files = Array.isArray(val) ? val : [val];
+  return files.filter(file => file instanceof File && file.size > 0);
+}, z.array(z.instanceof(File))
+    .min(1, "At least one image is required.")
+    .refine((files) => files.every(file => file.size <= MAX_FILE_SIZE), `Max file size is 5MB.`)
+    .refine((files) => files.every(file => ACCEPTED_IMAGE_TYPES.includes(file.type)), '.jpg, .jpeg, .png and .webp files are accepted.')
+),
 });
 
 const editProductSchema = z.object({

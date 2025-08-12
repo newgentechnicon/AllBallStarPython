@@ -20,9 +20,9 @@ interface ShopViewProps {
 
 export function ShopView({ products, filterData, allMorphs }: ShopViewProps) {
   return (
-    <div className=" text-black  bg-white">
+    <div className=" text-black bg-white ">
       <Navbar />
-      <main className="pt-24 container mx-auto px-4 pb-16">
+      <main className="pt-24 container mx-auto px-4 pb-16 max-w-7xl">
         <ShopHeader totalItems={products.length} filterData={filterData} allMorphs={allMorphs} />
 
         {/* Products Grid */}
