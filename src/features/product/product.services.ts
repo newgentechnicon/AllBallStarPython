@@ -162,6 +162,7 @@ export async function getProductById(
 export async function getStructuredMorphs() {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_morphs_structured");
+  console.log('get_morphs_structured : ' + data);
   if (error) {
     console.error("Error fetching structured morphs:", error);
     return [];

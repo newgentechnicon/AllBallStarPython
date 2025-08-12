@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MorphSelector, SelectedMorph as SingleSelectedMorph, MorphCategory, Morph } from "./morph-selector";
-// import { BulkMorphSelector } from "./BulkMorphSelector";
+import { BulkMorphSelector } from "./BulkMorphSelector";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface FilterData {
@@ -78,19 +78,32 @@ export function FilterSheet({ isOpen, onClose, filterData, allMorphs }: FilterSh
 
     const handleAddMorph = (morph: Morph) => {
         if (!selectedMorphsUI.find(m => m.id === morph.id)) {
-            const color_hex = '#ccc';
+            let color_hex: string = "#9CA3AF";
+            for (const cat of allMorphs) {
+                if (cat.morphs?.some((m: Morph) => m.id === morph.id)) {
+                    color_hex = cat.color_hex ?? "#9CA3AF";
+                    break;
+                }
+        
+                for (const sub of cat.sub_categories ?? []) {
+                    if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
+                    color_hex = sub.color_hex ?? "#9CA3AF";
+                    break;
+                    }
+                }
+            }
             setSelectedMorphsUI(prev => [...prev, { ...morph, color_hex }]);
             setFilters(prev => ({ ...prev, morphs: [...prev.morphs, String(morph.id)] }));
         }
     };
 
-    // const handleAddMultipleMorphs = (morphsToAdd: Morph[]) => {
-    //     const newMorphs = morphsToAdd.filter(
-    //         addMorph => !selectedMorphs.some(selMorph => selMorph.id === addMorph.id)
-    //     ).map(morph => ({ ...morph, color_hex: '#ccc' })); // Add default color
+    const handleAddMultipleMorphs = (morphsToAdd: Morph[]) => {
+        const newMorphs = morphsToAdd.filter(
+            addMorph => !selectedMorphsUI.some(selMorph => selMorph.id === addMorph.id)
+        ).map(morph => ({ ...morph, color_hex: '#ccc' })); // Add default color
 
-    //     setSelectedMorphs(prev => [...prev, ...newMorphs]);
-    // };
+        setSelectedMorphsUI(prev => [...prev, ...newMorphs]);
+    };
 
     const handleRemoveMorph = (morphToRemove: SingleSelectedMorph) => {
         setSelectedMorphsUI(prev => prev.filter(m => m.id !== morphToRemove.id));
@@ -174,16 +187,16 @@ export function FilterSheet({ isOpen, onClose, filterData, allMorphs }: FilterSh
                         />
                     </div>
                     
-                    {/* <div>
+                    <div>
                         <p className="text-sm font-semibold text-gray-800 mb-2">Morph (Bulk Add on Enter)</p>
                         <BulkMorphSelector
                             allMorphs={allMorphs}
-                            selectedMorphs={selectedMorphs}
+                            selectedMorphs={selectedMorphsUI}
                             onAddMorph={handleAddMorph}
                             onAddMultipleMorphs={handleAddMultipleMorphs}
                             onRemoveMorph={handleRemoveMorph}
                         />
-                    </div> */}
+                    </div>
                     
                     {/* Status */}
                     <div>

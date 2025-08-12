@@ -46,30 +46,35 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
   }, [state, showErrorToast]);
 
   const handleAddMorph = (morph: Morph) => {
-    if (!selectedMorphs.find((m) => m.id === morph.id)) {
-      let color_hex: string = "#9CA3AF";
-      for (const cat of allMorphs) {
-        if (cat.morphs?.some((m) => m.id === morph.id)) {
-          color_hex = cat.color_hex ?? "#9CA3AF";
-          break;
-        }
-        for (const sub of cat.sub_categories ?? []) {
-          if (sub.morphs?.some((m) => m.id === morph.id)) {
-            color_hex = sub.color_hex ?? "#9CA3AF";
+      if (!selectedMorphs.find((m: SelectedMorph) => m.id === morph.id)) {
+        let color_hex: string = "#9CA3AF";
+  
+        for (const cat of allMorphs) {
+          if (cat.morphs?.some((m: Morph) => m.id === morph.id)) {
+            color_hex = cat.color_hex ?? "#9CA3AF";
             break;
           }
+  
+          for (const sub of cat.sub_categories ?? []) {
+            if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
+              color_hex = sub.color_hex ?? "#9CA3AF";
+              break;
+            }
+          }
         }
-        if (color_hex) break;
+  
+        setSelectedMorphs([
+          ...selectedMorphs,
+          {
+            id: morph.id,
+            name: morph.name,
+            color_hex,
+            category_id: morph.category_id ?? null,
+            sub_category_id: morph.sub_category_id ?? null,
+          },
+        ]);
       }
-      setSelectedMorphs([...selectedMorphs, {
-          id: morph.id,
-          name: morph.name,
-          color_hex,
-          category_id: morph.category_id ?? null,
-          sub_category_id: morph.sub_category_id ?? null,
-        },]);
-    }
-  };
+    };
 
   const handleRemoveMorph = (morphToRemove: SelectedMorph) => {
     setSelectedMorphs(selectedMorphs.filter((m) => m.id !== morphToRemove.id));
