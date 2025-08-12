@@ -180,7 +180,7 @@ export async function getAllProducts(
     .select(
       `
       *,
-      farms ( name ),
+      farms ( name, logo_url ),
       product_morphs!inner ( morph_id ) 
     `
     )

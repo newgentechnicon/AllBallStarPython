@@ -6,6 +6,7 @@ import type { Farm } from '@/features/farm/farm.types';
 export type ProductWithMorphs = Tables<'products'> & {
   farms: {
     name: string;
+    logo_url: string;
   } | null;
   product_morphs: Array<{
     morphs: {
