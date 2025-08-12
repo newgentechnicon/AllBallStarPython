@@ -10,7 +10,7 @@ type MorphCategory = Tables<"morph_categories"> & {
   morphs: Morph[];
   sub_categories: MorphSubCategory[];
 };
-export type SelectedMorph = Morph & { color_hex?: string };
+export type SelectedMorph = Morph & { id: number, name: string, color_hex: string };
 
 // --- SVG Icons ---
 const PlusIcon = () => (
