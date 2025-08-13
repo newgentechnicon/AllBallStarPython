@@ -25,7 +25,7 @@ export interface ProductsPageData {
 
 // Type for detailed product data
 export type ProductDetail = Tables<'products'> & {
-  farms: Pick<Tables<'farms'>, 'name' | 'logo_url'> | null;
+  farms: Pick<Tables<'farms'>,'id' | 'name' | 'logo_url'> | null;
   product_morphs: Array<{
     morphs: (Tables<'morphs'> & {
       morph_categories: Pick<Tables<'morph_categories'>, 'name' | 'color_hex'> | null;

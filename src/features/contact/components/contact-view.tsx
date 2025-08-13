@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import type { Farm } from "@/features/farm/farm.types";
 import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
+import { ContactCard } from "@/features/contact/components/contact-card"; 
 
 interface ContactViewProps {
   farms: Pick<
@@ -20,95 +19,6 @@ interface ContactViewProps {
     | "contact_wechat"
   >[];
 }
-
-const SocialLink = ({
-  href,
-  children,
-}: {
-  href: string | null | undefined;
-  children: React.ReactNode;
-}) => {
-  if (!href) return null;
-  return (
-    <Link
-      href={href}
-      target="_blank"
-      className="flex items-center justify-center w-10 h-10 bg-neutral-700 rounded-lg transition-colors hover:bg-neutral-600"
-    >
-      {children}
-    </Link>
-  );
-};
-
-const ContactCard = ({ farm }: { farm: ContactViewProps["farms"][0] }) => (
-  <div className="bg-[#1C1C1C] rounded-2xl p-6 w-full max-w-sm mx-auto">
-    <div className="flex flex-col items-center text-center">
-      <Image
-        src={farm.logo_url || "https://placehold.co/100x100/333/fff?text=Logo"}
-        alt={`${farm.name} Logo`}
-        width={80}
-        height={80}
-        className="rounded-full object-cover border-2 border-neutral-700"
-      />
-      <h3 className="mt-4 text-xl font-bold uppercase tracking-wider text-white">
-        {farm.name}
-      </h3>
-      <p className="mt-1 text-sm text-neutral-400">{farm.breeder_name}</p>
-      <div className="mt-6 flex gap-3">
-        <SocialLink href={farm.contact_instagram}>
-          <Image
-            src="/images/instagram-icon.png"
-            alt="instagram"
-            width={100}
-            height={100}
-            quality={100}
-            className="h-5 w-5 mx-2 my-2"
-          />
-        </SocialLink>
-        <SocialLink href={farm.contact_facebook}>
-          <Image
-            src="/images/facebook-icon.png"
-            alt="facebook"
-            width={14}
-            height={26}
-            quality={100}
-            className="w-2.5 h-5 mx-2 my-2"
-          />
-        </SocialLink>
-        <SocialLink href={farm.contact_line}>
-          <Image
-            src="/images/line-icon.png"
-            alt="line"
-            width={100}
-            height={100}
-            quality={100}
-            className="h-5 w-5 mx-2 my-2"
-          />
-        </SocialLink>
-        <SocialLink href={farm.contact_whatsapp}>
-          <Image
-            src="/images/whatsapp-icon.png"
-            alt="whatsapp"
-            width={100}
-            height={100}
-            quality={100}
-            className="h-5 w-5 mx-2 my-2"
-          />
-        </SocialLink>
-        <SocialLink href={farm.contact_wechat}>
-          <Image
-            src="/images/wechat-icon.png"
-            alt="wechat"
-            width={100}
-            height={100}
-            quality={100}
-            className="h-5 w-5 mx-2 my-2"
-          />
-        </SocialLink>
-      </div>
-    </div>
-  </div>
-);
 
 export function ContactView({ farms }: ContactViewProps) {
   return (

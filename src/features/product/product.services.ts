@@ -132,7 +132,7 @@ export async function getProductById(
     .from("products")
     .select(
       `*,
-      farms (name, logo_url),
+      farms (id, name, logo_url),
       product_morphs (
         morphs (
           id,
