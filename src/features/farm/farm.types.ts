@@ -29,3 +29,15 @@ export interface EditFarmState {
   };
   fields?: Partial<Farm>;
 }
+
+export type FarmContactInfo = Pick<
+  Farm,
+  | 'name'
+  | 'logo_url'
+  | 'breeder_name'
+  | 'contact_instagram'
+  | 'contact_facebook'
+  | 'contact_line'
+  | 'contact_whatsapp'
+  | 'contact_wechat'
+>;
