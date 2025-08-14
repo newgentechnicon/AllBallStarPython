@@ -4,25 +4,8 @@ import { useState } from "react";
 import { FilterSheet } from "./FilterSheet";
 import { MorphCategory } from "./morph-selector";
 import Link from "next/link";
+import { SearchBox } from "./search-box";
 
-// SVG Icons
-const SearchIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-5 w-5 text-gray-400"
-  >
-    <circle cx="11" cy="11" r="8"></circle>
-    <path d="m21 21-4.3-4.3"></path>
-  </svg>
-);
 const FilterIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -58,16 +41,7 @@ export function ShopHeader({ totalItems, filterData, allMorphs }: ShopHeaderProp
         </h1>
 
         {/* Search and Filter */}
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <SearchIcon />
-          </div>
-          <input
-            type="text"
-            className="block w-full rounded-lg border-gray-300 py-2.5 pl-10 text-sm"
-            placeholder="Search here"
-          />
-        </div>
+        <SearchBox />
 
         <div className="flex justify-between items-center mt-4">
           <p className="text-sm text-gray-600">
