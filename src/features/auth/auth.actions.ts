@@ -32,7 +32,6 @@ export async function login(
     };
   }
   
-  // สำเร็จแล้ว redirect ไปหน้า farm
   revalidatePath('/', 'layout')
   redirect('/farm')
 }
