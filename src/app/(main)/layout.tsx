@@ -1,44 +1,33 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { AuthProvider } from '@/context/AuthContext';
 import Header from '@/components/common/Header';
 
-export default function AppLayout({
+export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    // รอจนกว่าการตรวจสอบ session จะเสร็จสิ้น
-    if (!isLoading) {
-      // ถ้าไม่มี user ให้ redirect ไปหน้า login
-      if (!user) {
-        router.push('/login');
-      }
-    }
-  }, [user, isLoading, router]);
-
-  // แสดงหน้า loading ขณะรอตรวจสอบ session
-  if (isLoading) {
-    return (
-        <div className="flex h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
-            <p className="dark:text-white">Loading application...</p>
-        </div>
-    );
+  // ถ้าไม่มี user ให้ redirect ไปหน้า login ทันที
+  // โค้ดนี้ทำงานที่ Server ทำให้ปลอดภัยและไม่มี Race Condition
+  if (!user) {
+    redirect('/login');
   }
-  
-  // ถ้ามี user ให้แสดง layout ปกติ
-  return user ? (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Header />
-      <main>
-        {children}
-      </main>
-    </div>
-  ) : null; // หรือแสดงหน้าเปล่าๆ ก่อนจะ redirect
+
+  // ถ้ามี user, ก็ render Layout และ children ต่อไป
+  // เรายังคงต้องใช้ AuthProvider เพื่อให้ Client Components อื่นๆ
+  // สามารถเข้าถึงข้อมูล user ได้ผ่าน useAuth()
+  return (
+    <AuthProvider>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+          <Header />
+          <main>
+            {children}
+          </main>
+        </div>
+    </AuthProvider>
+  );
 }
