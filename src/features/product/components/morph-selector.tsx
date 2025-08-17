@@ -5,7 +5,17 @@ import type { Tables } from "@/types/database.types";
 
 // --- Type Definitions ---
 export type Morph = Tables<"morphs">;
-export type MorphSubCategory = Tables<"morph_sub_categories"> & { morphs: Morph[] };
+
+// ✅ 1. เพิ่ม Type สำหรับ Sub-Sub-Category
+export type MorphSubSubCategory = Tables<"morph_sub_sub_categories"> & {
+  morphs: Morph[];
+};
+
+export type MorphSubCategory = Tables<"morph_sub_categories"> & {
+  morphs: Morph[];
+  sub_sub_categories: MorphSubSubCategory[]; // ✅ เพิ่ม sub_sub_categories เข้าไป
+};
+
 export type MorphCategory = Tables<"morph_categories"> & {
   morphs: Morph[];
   sub_categories: MorphSubCategory[];
@@ -70,22 +80,37 @@ export function MorphSelector({
     const text = searchText.toLowerCase();
     const selectedIds = new Set(selectedMorphs.map((m) => m.id));
     const result: MorphCategory[] = [];
+    
     for (const cat of allMorphs) {
       const matchedMorphs = (cat.morphs ?? []).filter(
         (m) =>
           (!text || m.name.toLowerCase().includes(text)) &&
           !selectedIds.has(m.id)
       );
+
+      // ✅ 2. อัปเดต Logic การกรองให้ครอบคลุมถึง sub-sub-categories
       const matchedSubs = (cat.sub_categories ?? [])
-        .map((sub) => ({
-          ...sub,
-          morphs: (sub.morphs ?? []).filter(
-            (m) =>
-              (!text || m.name.toLowerCase().includes(text)) &&
-              !selectedIds.has(m.id)
-          ),
-        }))
-        .filter((sub) => sub.morphs.length > 0);
+        .map((sub) => {
+          const matchedSubMorphs = (sub.morphs ?? []).filter(
+            (m) => (!text || m.name.toLowerCase().includes(text)) && !selectedIds.has(m.id)
+          );
+          const matchedSubSubCats = (sub.sub_sub_categories ?? [])
+            .map(subSub => ({
+              ...subSub,
+              morphs: (subSub.morphs ?? []).filter(
+                (m) => (!text || m.name.toLowerCase().includes(text)) && !selectedIds.has(m.id)
+              )
+            }))
+            .filter(subSub => subSub.morphs.length > 0);
+
+          return {
+            ...sub,
+            morphs: matchedSubMorphs,
+            sub_sub_categories: matchedSubSubCats,
+          };
+        })
+        .filter((sub) => sub.morphs.length > 0 || sub.sub_sub_categories.length > 0);
+
       if (matchedMorphs.length > 0 || matchedSubs.length > 0) {
         result.push({
           ...cat,
@@ -181,32 +206,29 @@ export function MorphSelector({
                 {(category.sub_categories ?? []).map((sub) => (
                   <div key={sub.id} className="pl-3">
                     <div className="flex items-center gap-x-2 px-3 py-1">
-                      <span
-                        className="text-xs font-medium"
-                        style={{ color: "#9CA3AF" }}
-                      >
-                        {sub.name}
-                      </span>
+                      <span className="text-xs font-medium" style={{ color: "#9CA3AF" }}>{sub.name}</span>
                       <span className="flex-grow border-t border-dashed border-gray-300 dark:border-neutral-700"></span>
                     </div>
                     {(sub.morphs ?? []).map((morph) => (
-                      <button
-                        type="button"
-                        key={morph.id}
-                        onClick={() => {
-                          onAddMorph(morph);
-                          setSearchText("");
-                        }}
-                        className="flex items-center gap-x-2 w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md"
-                      >
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{
-                            backgroundColor: sub.color_hex ?? "#9CA3AF",
-                          }}
-                        ></span>
+                      <button type="button" key={morph.id} onClick={() => { onAddMorph(morph); setSearchText(""); }} className="flex items-center gap-x-2 w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: sub.color_hex ?? "#9CA3AF" }}></span>
                         <span>{morph.name}</span>
                       </button>
+                    ))}
+                    {/* ✅ 3. เพิ่ม JSX สำหรับแสดงผล sub-sub-categories */}
+                    {(sub.sub_sub_categories ?? []).map((subSub) => (
+                        <div key={subSub.id} className="pl-3">
+                            <div className="flex items-center gap-x-2 px-3 py-1">
+                                <span className="text-xs font-light" style={{ color: "#9CA3AF" }}>{subSub.name}</span>
+                                <span className="flex-grow border-t border-dashed border-gray-300 dark:border-neutral-700"></span>
+                            </div>
+                            {(subSub.morphs ?? []).map((morph) => (
+                                <button type="button" key={morph.id} onClick={() => { onAddMorph(morph); setSearchText(""); }} className="flex items-center gap-x-2 w-full text-left text-sm px-4 py-2 hover:bg-gray-100 rounded-md">
+                                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: sub.color_hex ?? "#9CA3AF" }}></span>
+                                    <span>{morph.name}</span>
+                                </button>
+                            ))}
+                        </div>
                     ))}
                   </div>
                 ))}
