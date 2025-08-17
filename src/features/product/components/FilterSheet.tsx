@@ -33,6 +33,8 @@ export function FilterSheet({
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
+    minPrice: "",
+    maxPrice: "",
     sex: [] as string[],
     breeders: [] as string[],
     years: [] as string[],
@@ -42,6 +44,8 @@ export function FilterSheet({
 
   useEffect(() => {
     const initialFilters = {
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
       sex: searchParams.getAll("sex"),
       breeders: searchParams.getAll("breeders"),
       years: searchParams.getAll("years"),
@@ -84,11 +88,15 @@ export function FilterSheet({
   const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams);
     Object.keys(filters).forEach((key) => {
-      params.delete(key);
-      const values = filters[key as keyof typeof filters];
-      values.forEach((value) => params.append(key, value));
+      params.delete(key); // Clear old values
+      const value = filters[key as keyof typeof filters];
+      if (Array.isArray(value)) {
+        value.forEach((v) => params.append(key, v));
+      } else if (value) {
+        // Only set if value is not empty
+        params.set(key, value);
+      }
     });
-
     router.push(`${pathname}?${params.toString()}`);
     onClose();
   };
@@ -131,6 +139,11 @@ export function FilterSheet({
     }));
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
   if (!isOpen) return null;
 
   return (
@@ -153,15 +166,21 @@ export function FilterSheet({
             </label>
             <div className="flex items-center gap-4">
               <input
-                type="text"
+                type="number"
+                name="minPrice"
                 placeholder="Min amount"
                 className="w-full rounded-lg border-gray-300 text-sm"
+                value={filters.minPrice}
+                onChange={handleInputChange}
               />
               <span className="text-gray-400">-</span>
               <input
-                type="text"
+                type="number"
+                name="maxPrice"
                 placeholder="Max amount"
                 className="w-full rounded-lg border-gray-300 text-sm"
+                value={filters.maxPrice}
+                onChange={handleInputChange}
               />
             </div>
           </div>

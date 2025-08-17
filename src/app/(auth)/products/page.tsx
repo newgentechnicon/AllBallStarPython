@@ -23,6 +23,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     years: Array.isArray(rawSearchParams.years) ? rawSearchParams.years : rawSearchParams.years ? [rawSearchParams.years] : [],
     productStatus: Array.isArray(rawSearchParams.productStatus) ? rawSearchParams.productStatus : rawSearchParams.productStatus ? [rawSearchParams.productStatus] : [],
     morphs: Array.isArray(rawSearchParams.morphs) ? rawSearchParams.morphs : rawSearchParams.morphs ? [rawSearchParams.morphs] : [],
+    minPrice: rawSearchParams.minPrice as string,
+    maxPrice: rawSearchParams.maxPrice as string,
   };
 
   const [products, filterData, allMorphs] = await Promise.all([

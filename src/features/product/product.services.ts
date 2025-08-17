@@ -11,6 +11,8 @@ interface ProductFilters {
   years?: string[];
   productStatus?: string[];
   morphs?: string[];
+  minPrice?: string;
+  maxPrice?: string;
 }
 
 /**
@@ -221,6 +223,19 @@ export async function getAllProducts(
         morphNames.map((name) => `name.ilike.%${name}%`).join(","),
         { foreignTable: "product_morphs.morphs" }
       );
+    }
+  }
+
+  if (filters.minPrice) {
+    const minPrice = Number(filters.minPrice);
+    if (!isNaN(minPrice)) {
+      query = query.gte('price', minPrice); // gte = Greater Than or Equal To
+    }
+  }
+  if (filters.maxPrice) {
+    const maxPrice = Number(filters.maxPrice);
+    if (!isNaN(maxPrice)) {
+      query = query.lte('price', maxPrice); // lte = Less Than or Equal To
     }
   }
 
