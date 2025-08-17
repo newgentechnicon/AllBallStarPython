@@ -7,7 +7,6 @@ import {
   MorphCategory,
   Morph,
 } from "./morph-selector";
-import { BulkMorphSelector } from "./BulkMorphSelector";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -52,14 +51,25 @@ export function FilterSheet({
     setFilters(initialFilters);
 
     const initialMorphs = initialFilters.morphs
-      .map((id) => {
+      .map((morph) => {
         for (const cat of allMorphs) {
-          const found = cat.morphs?.find((m: Morph) => m.id === Number(id));
+          // หาใน morphs ของ category
+          const found =
+            cat.morphs?.find(
+              (m: Morph) =>
+                m.id === Number(morph) ||
+                m.name.toLowerCase() === String(morph).toLowerCase()
+            ) ?? null;
           if (found) return { ...found, color_hex: cat.color_hex ?? "#ccc" };
+
+          // หาใน sub-categories
           for (const sub of cat.sub_categories ?? []) {
-            const foundInSub = sub.morphs?.find(
-              (m: Morph) => m.id === Number(id)
-            );
+            const foundInSub =
+              sub.morphs?.find(
+                (m: Morph) =>
+                  m.id === Number(morph) ||
+                  m.name.toLowerCase() === String(morph).toLowerCase()
+              ) ?? null;
             if (foundInSub)
               return { ...foundInSub, color_hex: sub.color_hex ?? "#ccc" };
           }
@@ -67,6 +77,7 @@ export function FilterSheet({
         return null;
       })
       .filter((m): m is SingleSelectedMorph => m !== null);
+
     setSelectedMorphsUI(initialMorphs);
   }, [searchParams, allMorphs]);
 
@@ -82,7 +93,6 @@ export function FilterSheet({
     onClose();
   };
 
-  // const [selectedMorphs, setSelectedMorphs] = useState<SingleSelectedMorph[]>([]);
   const [selectedMorphsUI, setSelectedMorphsUI] = useState<
     SingleSelectedMorph[]
   >([]);
@@ -106,20 +116,9 @@ export function FilterSheet({
       setSelectedMorphsUI((prev) => [...prev, { ...morph, color_hex }]);
       setFilters((prev) => ({
         ...prev,
-        morphs: [...prev.morphs, String(morph.id)],
+        morphs: [...prev.morphs, String(morph.name)],
       }));
     }
-  };
-
-  const handleAddMultipleMorphs = (morphsToAdd: Morph[]) => {
-    const newMorphs = morphsToAdd
-      .filter(
-        (addMorph) =>
-          !selectedMorphsUI.some((selMorph) => selMorph.id === addMorph.id)
-      )
-      .map((morph) => ({ ...morph, color_hex: "#ccc" })); // Add default color
-
-    setSelectedMorphsUI((prev) => [...prev, ...newMorphs]);
   };
 
   const handleRemoveMorph = (morphToRemove: SingleSelectedMorph) => {
@@ -128,7 +127,7 @@ export function FilterSheet({
     );
     setFilters((prev) => ({
       ...prev,
-      morphs: prev.morphs.filter((id) => id !== String(morphToRemove.id)),
+      morphs: prev.morphs.filter((name) => name !== morphToRemove.name),
     }));
   };
 
@@ -197,10 +196,7 @@ export function FilterSheet({
                     quality={100}
                     className="mx-auto"
                   />
-                  <label
-                    htmlFor="sex-male"
-                    className="text-sm text-gray-800"
-                  >
+                  <label htmlFor="sex-male" className="text-sm text-gray-800">
                     Male
                   </label>
                 </div>
@@ -229,10 +225,7 @@ export function FilterSheet({
                     quality={100}
                     className="mx-auto"
                   />
-                  <label
-                    htmlFor="sex-female"
-                    className="text-sm text-gray-800"
-                  >
+                  <label htmlFor="sex-female" className="text-sm text-gray-800">
                     Female
                   </label>
                 </div>
@@ -317,19 +310,6 @@ export function FilterSheet({
               allMorphs={allMorphs}
               selectedMorphs={selectedMorphsUI}
               onAddMorph={handleAddMorph}
-              onRemoveMorph={handleRemoveMorph}
-            />
-          </div>
-
-          <div>
-            <p className="text-sm font-semibold text-gray-800 mb-2">
-              Morph (Bulk Add on Enter)
-            </p>
-            <BulkMorphSelector
-              allMorphs={allMorphs}
-              selectedMorphs={selectedMorphsUI}
-              onAddMorph={handleAddMorph}
-              onAddMultipleMorphs={handleAddMultipleMorphs}
               onRemoveMorph={handleRemoveMorph}
             />
           </div>

@@ -50,8 +50,6 @@ export async function getProductsPageData(params: {
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
-  console.log("params.page:", params.page);
-
   // 3. ดึงข้อมูล "จำนวน" สำหรับ Tabs (ส่วนนี้ทำงานถูกต้องอยู่แล้ว)
   const fetchCount = async (status?: "Available" | "On Hold") => {
     let query = supabase
@@ -94,8 +92,6 @@ export async function getProductsPageData(params: {
   if (currentStatus !== "All") {
     query = query.eq("status", currentStatus);
   }
-
-  console.log("status:", currentStatus);
 
   // สั่งเรียงข้อมูล, แบ่งหน้า, และดึงข้อมูลสุดท้าย
   const {
@@ -162,7 +158,7 @@ export async function getProductById(
 export async function getStructuredMorphs() {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_morphs_structured");
-  console.log('get_morphs_structured : ' + data);
+  console.log('get_morphs_structured : ' + data)
   if (error) {
     console.error("Error fetching structured morphs:", error);
     return [];
@@ -181,7 +177,9 @@ export async function getAllProducts(
       `
       *,
       farms ( name, logo_url ),
-      product_morphs!inner ( morph_id ) 
+      product_morphs!inner (
+        morphs!inner ( id, name )
+      )
     `
     )
     .is("deleted_at", null)
@@ -206,10 +204,23 @@ export async function getAllProducts(
     query = query.in("status", filters.productStatus);
   }
   if (filters.morphs?.length) {
-    const morphIds = filters.morphs.map(Number).filter((id) => !isNaN(id));
+    const morphIds = filters.morphs
+      .map((m) => Number(m))
+      .filter((id) => !isNaN(id));
+
+    const morphNames = filters.morphs
+      .map((m) => (isNaN(Number(m)) ? String(m) : null))
+      .filter((name): name is string => name !== null);
+
     if (morphIds.length) {
-      console.log('morphIds : '+morphIds)
       query = query.in("product_morphs.morph_id", morphIds);
+    }
+
+    if (morphNames.length) {
+      query = query.or(
+        morphNames.map((name) => `name.ilike.%${name}%`).join(","),
+        { foreignTable: "product_morphs.morphs" }
+      );
     }
   }
 
