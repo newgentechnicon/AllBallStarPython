@@ -55,34 +55,36 @@ export function FilterSheet({
     setFilters(initialFilters);
 
     const initialMorphs = initialFilters.morphs
-      .map((morph) => {
+      .map((morphIdentifier) => {
         for (const cat of allMorphs) {
-          // หาใน morphs ของ category
-          const found =
-            cat.morphs?.find(
-              (m: Morph) =>
-                m.id === Number(morph) ||
-                m.name.toLowerCase() === String(morph).toLowerCase()
-            ) ?? null;
+          let found = cat.morphs?.find(
+            (m: Morph) =>
+              String(m.id) === morphIdentifier || m.name === morphIdentifier
+          );
           if (found) return { ...found, color_hex: cat.color_hex ?? "#ccc" };
 
-          // หาใน sub-categories
           for (const sub of cat.sub_categories ?? []) {
-            const foundInSub =
-              sub.morphs?.find(
+            found = sub.morphs?.find(
+              (m: Morph) =>
+                String(m.id) === morphIdentifier || m.name === morphIdentifier
+            );
+            if (found) return { ...found, color_hex: sub.color_hex ?? "#ccc" };
+
+            for (const subSub of sub.sub_sub_categories ?? []) {
+              found = subSub.morphs?.find(
                 (m: Morph) =>
-                  m.id === Number(morph) ||
-                  m.name.toLowerCase() === String(morph).toLowerCase()
-              ) ?? null;
-            if (foundInSub)
-              return { ...foundInSub, color_hex: sub.color_hex ?? "#ccc" };
+                  String(m.id) === morphIdentifier || m.name === morphIdentifier
+              );
+              if (found)
+                return { ...found, color_hex: sub.color_hex ?? "#ccc" };
+            }
           }
         }
         return null;
       })
       .filter((m): m is SingleSelectedMorph => m !== null);
 
-    setSelectedMorphsUI(initialMorphs);
+    setSelectedMorphs(initialMorphs);
   }, [searchParams, allMorphs]);
 
   const handleApplyFilters = () => {
@@ -101,27 +103,45 @@ export function FilterSheet({
     onClose();
   };
 
-  const [selectedMorphsUI, setSelectedMorphsUI] = useState<
-    SingleSelectedMorph[]
-  >([]);
+  const [selectedMorphsUI, setSelectedMorphs] = useState<SingleSelectedMorph[]>(
+    []
+  );
 
   const handleAddMorph = (morph: Morph) => {
     if (!selectedMorphsUI.find((m) => m.id === morph.id)) {
       let color_hex: string = "#9CA3AF";
+      let colorFound = false;
+
       for (const cat of allMorphs) {
         if (cat.morphs?.some((m: Morph) => m.id === morph.id)) {
           color_hex = cat.color_hex ?? "#9CA3AF";
-          break;
+          colorFound = true;
         }
 
-        for (const sub of cat.sub_categories ?? []) {
-          if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
-            color_hex = sub.color_hex ?? "#9CA3AF";
-            break;
+        if (!colorFound) {
+          for (const sub of cat.sub_categories ?? []) {
+            if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
+              color_hex = sub.color_hex ?? "#9CA3AF";
+              colorFound = true;
+              break;
+            }
+
+            if (!colorFound) {
+              for (const subSub of sub.sub_sub_categories ?? []) {
+                if (subSub.morphs?.some((m: Morph) => m.id === morph.id)) {
+                  color_hex = subSub.color_hex ?? sub.color_hex ?? "#9CA3AF";
+                  colorFound = true;
+                  break;
+                }
+              }
+            }
+            if (colorFound) break;
           }
         }
+        if (colorFound) break;
       }
-      setSelectedMorphsUI((prev) => [...prev, { ...morph, color_hex }]);
+
+      setSelectedMorphs((prev) => [...prev, { ...morph, color_hex }]);
       setFilters((prev) => ({
         ...prev,
         morphs: [...prev.morphs, String(morph.name)],
@@ -130,9 +150,7 @@ export function FilterSheet({
   };
 
   const handleRemoveMorph = (morphToRemove: SingleSelectedMorph) => {
-    setSelectedMorphsUI((prev) =>
-      prev.filter((m) => m.id !== morphToRemove.id)
-    );
+    setSelectedMorphs((prev) => prev.filter((m) => m.id !== morphToRemove.id));
     setFilters((prev) => ({
       ...prev,
       morphs: prev.morphs.filter((name) => name !== morphToRemove.name),
@@ -140,9 +158,27 @@ export function FilterSheet({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleResetFilters = () => {
+    const initialFilters = {
+      minPrice: "",
+      maxPrice: "",
+      sex: [],
+      breeders: [],
+      years: [],
+      productStatus: [],
+      morphs: [],
     };
+
+    setFilters(initialFilters);
+    setSelectedMorphs([]);
+
+    // router.push(pathname);
+    // onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -393,7 +429,10 @@ export function FilterSheet({
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4 mt-auto pt-6">
-          <button className="cursor-pointer py-3 px-4 min-w-[160px] inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-neutral-500 !text-neutral-500 hover:border-neutral-800 hover:text-neutral-800 focus:outline-none focus:border-neutral-800 focus:text-neutral-800 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-400 dark:!text-neutral-400 dark:hover:text-neutral-300 dark:hover:border-neutral-300">
+          <button
+            className="cursor-pointer py-3 px-4 min-w-[160px] inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-neutral-500 !text-neutral-500 hover:border-neutral-800 hover:text-neutral-800 focus:outline-none focus:border-neutral-800 focus:text-neutral-800 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-400 dark:!text-neutral-400 dark:hover:text-neutral-300 dark:hover:border-neutral-300"
+            onClick={handleResetFilters}
+          >
             Reset
           </button>
           <button

@@ -4,20 +4,16 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createProductAction } from "@/features/product/product.actions";
 import type { CreateProductState } from "@/features/product/product.types";
-import type { Tables } from "@/types/database.types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { Button } from "@/components/ui/Button";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { MorphSelector, type SelectedMorph } from "./morph-selector";
-
-// --- Type Definitions ---
-type Morph = Tables<"morphs">;
-type MorphSubCategory = Tables<"morph_sub_categories"> & { morphs: Morph[] };
-type MorphCategory = Tables<"morph_categories"> & {
-  morphs: Morph[];
-  sub_categories: MorphSubCategory[];
-};
+import {
+  MorphSelector,
+  type SelectedMorph,
+  MorphCategory,
+  Morph,
+} from "./morph-selector";
 
 interface CreateProductViewProps {
   allMorphs: MorphCategory[];
@@ -46,33 +42,40 @@ export function CreateProductView({ allMorphs }: CreateProductViewProps) {
   }, [state, showErrorToast]);
 
   const handleAddMorph = (morph: Morph) => {
-    if (!selectedMorphs.find((m: SelectedMorph) => m.id === morph.id)) {
+    if (!selectedMorphs.find((m) => m.id === morph.id)) {
       let color_hex: string = "#9CA3AF";
+      let colorFound = false;
 
       for (const cat of allMorphs) {
         if (cat.morphs?.some((m: Morph) => m.id === morph.id)) {
           color_hex = cat.color_hex ?? "#9CA3AF";
-          break;
+          colorFound = true;
         }
 
-        for (const sub of cat.sub_categories ?? []) {
-          if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
-            color_hex = sub.color_hex ?? "#9CA3AF";
-            break;
+        if (!colorFound) {
+          for (const sub of cat.sub_categories ?? []) {
+            if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
+              color_hex = sub.color_hex ?? "#9CA3AF";
+              colorFound = true;
+              break;
+            }
+
+            if (!colorFound) {
+              for (const subSub of sub.sub_sub_categories ?? []) {
+                if (subSub.morphs?.some((m: Morph) => m.id === morph.id)) {
+                  color_hex = subSub.color_hex ?? sub.color_hex ?? "#9CA3AF";
+                  colorFound = true;
+                  break;
+                }
+              }
+            }
+            if (colorFound) break;
           }
         }
+        if (colorFound) break;
       }
 
-      setSelectedMorphs([
-        ...selectedMorphs,
-        {
-          id: morph.id,
-          name: morph.name,
-          color_hex,
-          category_id: morph.category_id ?? null,
-          sub_category_id: morph.sub_category_id ?? null,
-        },
-      ]);
+      setSelectedMorphs((prev) => [...prev, { ...morph, color_hex }]);
     }
   };
 
