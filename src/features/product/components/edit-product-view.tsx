@@ -95,33 +95,40 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
   };
 
   const handleAddMorph = (morph: Morph) => {
-    if (!selectedMorphs.find((m: SelectedMorph) => m.id === morph.id)) {
+    if (!selectedMorphs.find((m) => m.id === morph.id)) {
       let color_hex: string = "#9CA3AF";
+      let colorFound = false;
 
       for (const cat of allMorphs) {
         if (cat.morphs?.some((m: Morph) => m.id === morph.id)) {
           color_hex = cat.color_hex ?? "#9CA3AF";
-          break;
+          colorFound = true;
         }
 
-        for (const sub of cat.sub_categories ?? []) {
-          if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
-            color_hex = sub.color_hex ?? "#9CA3AF";
-            break;
+        if (!colorFound) {
+          for (const sub of cat.sub_categories ?? []) {
+            if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
+              color_hex = sub.color_hex ?? "#9CA3AF";
+              colorFound = true;
+              break;
+            }
+
+            if (!colorFound) {
+              for (const subSub of sub.sub_sub_categories ?? []) {
+                if (subSub.morphs?.some((m: Morph) => m.id === morph.id)) {
+                  color_hex = subSub.color_hex ?? sub.color_hex ?? "#9CA3AF";
+                  colorFound = true;
+                  break;
+                }
+              }
+            }
+            if (colorFound) break;
           }
         }
+        if (colorFound) break;
       }
 
-      setSelectedMorphs([
-        ...selectedMorphs,
-        {
-          id: morph.id,
-          name: morph.name,
-          color_hex,
-          category_id: morph.category_id ?? null,
-          sub_category_id: morph.sub_category_id ?? null,
-        },
-      ]);
+      setSelectedMorphs((prev) => [...prev, { ...morph, color_hex }]);
     }
   };
 

@@ -1,13 +1,7 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+import { Json } from "@/lib/database.types"
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -83,19 +77,19 @@ export type Database = {
       morph_sub_categories: {
         Row: {
           category_id: number
-          color_hex: string
+          color_hex: string | null
           id: number
           name: string
         }
         Insert: {
           category_id: number
-          color_hex: string
+          color_hex?: string | null
           id?: number
           name: string
         }
         Update: {
           category_id?: number
-          color_hex?: string
+          color_hex?: string | null
           id?: number
           name?: string
         }
@@ -109,24 +103,56 @@ export type Database = {
           },
         ]
       }
+      morph_sub_sub_categories: {
+        Row: {
+          color_hex: string | null
+          id: number
+          name: string
+          sub_category_id: number
+        }
+        Insert: {
+          color_hex?: string | null
+          id?: number
+          name: string
+          sub_category_id: number
+        }
+        Update: {
+          color_hex?: string | null
+          id?: number
+          name?: string
+          sub_category_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "morph_sub_sub_categories_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "morph_sub_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       morphs: {
         Row: {
           category_id: number
           id: number
           name: string
           sub_category_id: number | null
+          sub_sub_category_id: number | null
         }
         Insert: {
           category_id: number
           id?: number
           name: string
           sub_category_id?: number | null
+          sub_sub_category_id?: number | null
         }
         Update: {
           category_id?: number
           id?: number
           name?: string
           sub_category_id?: number | null
+          sub_sub_category_id?: number | null
         }
         Relationships: [
           {
@@ -141,6 +167,13 @@ export type Database = {
             columns: ["sub_category_id"]
             isOneToOne: false
             referencedRelation: "morph_sub_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "morphs_sub_sub_category_id_fkey"
+            columns: ["sub_sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "morph_sub_sub_categories"
             referencedColumns: ["id"]
           },
         ]

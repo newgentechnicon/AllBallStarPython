@@ -7,7 +7,6 @@ import {
   MorphCategory,
   Morph,
 } from "./morph-selector";
-import { BulkMorphSelector } from "./BulkMorphSelector";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -34,6 +33,8 @@ export function FilterSheet({
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
+    minPrice: "",
+    maxPrice: "",
     sex: [] as string[],
     breeders: [] as string[],
     years: [] as string[],
@@ -43,6 +44,8 @@ export function FilterSheet({
 
   useEffect(() => {
     const initialFilters = {
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
       sex: searchParams.getAll("sex"),
       breeders: searchParams.getAll("breeders"),
       years: searchParams.getAll("years"),
@@ -52,84 +55,129 @@ export function FilterSheet({
     setFilters(initialFilters);
 
     const initialMorphs = initialFilters.morphs
-      .map((id) => {
+      .map((morphIdentifier) => {
         for (const cat of allMorphs) {
-          const found = cat.morphs?.find((m: Morph) => m.id === Number(id));
+          let found = cat.morphs?.find(
+            (m: Morph) =>
+              String(m.id) === morphIdentifier || m.name === morphIdentifier
+          );
           if (found) return { ...found, color_hex: cat.color_hex ?? "#ccc" };
+
           for (const sub of cat.sub_categories ?? []) {
-            const foundInSub = sub.morphs?.find(
-              (m: Morph) => m.id === Number(id)
+            found = sub.morphs?.find(
+              (m: Morph) =>
+                String(m.id) === morphIdentifier || m.name === morphIdentifier
             );
-            if (foundInSub)
-              return { ...foundInSub, color_hex: sub.color_hex ?? "#ccc" };
+            if (found) return { ...found, color_hex: sub.color_hex ?? "#ccc" };
+
+            for (const subSub of sub.sub_sub_categories ?? []) {
+              found = subSub.morphs?.find(
+                (m: Morph) =>
+                  String(m.id) === morphIdentifier || m.name === morphIdentifier
+              );
+              if (found)
+                return { ...found, color_hex: sub.color_hex ?? "#ccc" };
+            }
           }
         }
         return null;
       })
       .filter((m): m is SingleSelectedMorph => m !== null);
-    setSelectedMorphsUI(initialMorphs);
+
+    setSelectedMorphs(initialMorphs);
   }, [searchParams, allMorphs]);
 
   const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams);
     Object.keys(filters).forEach((key) => {
-      params.delete(key);
-      const values = filters[key as keyof typeof filters];
-      values.forEach((value) => params.append(key, value));
+      params.delete(key); // Clear old values
+      const value = filters[key as keyof typeof filters];
+      if (Array.isArray(value)) {
+        value.forEach((v) => params.append(key, v));
+      } else if (value) {
+        // Only set if value is not empty
+        params.set(key, value);
+      }
     });
-
     router.push(`${pathname}?${params.toString()}`);
     onClose();
   };
 
-  // const [selectedMorphs, setSelectedMorphs] = useState<SingleSelectedMorph[]>([]);
-  const [selectedMorphsUI, setSelectedMorphsUI] = useState<
-    SingleSelectedMorph[]
-  >([]);
+  const [selectedMorphsUI, setSelectedMorphs] = useState<SingleSelectedMorph[]>(
+    []
+  );
 
   const handleAddMorph = (morph: Morph) => {
     if (!selectedMorphsUI.find((m) => m.id === morph.id)) {
       let color_hex: string = "#9CA3AF";
+      let colorFound = false;
+
       for (const cat of allMorphs) {
         if (cat.morphs?.some((m: Morph) => m.id === morph.id)) {
           color_hex = cat.color_hex ?? "#9CA3AF";
-          break;
+          colorFound = true;
         }
 
-        for (const sub of cat.sub_categories ?? []) {
-          if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
-            color_hex = sub.color_hex ?? "#9CA3AF";
-            break;
+        if (!colorFound) {
+          for (const sub of cat.sub_categories ?? []) {
+            if (sub.morphs?.some((m: Morph) => m.id === morph.id)) {
+              color_hex = sub.color_hex ?? "#9CA3AF";
+              colorFound = true;
+              break;
+            }
+
+            if (!colorFound) {
+              for (const subSub of sub.sub_sub_categories ?? []) {
+                if (subSub.morphs?.some((m: Morph) => m.id === morph.id)) {
+                  color_hex = subSub.color_hex ?? sub.color_hex ?? "#9CA3AF";
+                  colorFound = true;
+                  break;
+                }
+              }
+            }
+            if (colorFound) break;
           }
         }
+        if (colorFound) break;
       }
-      setSelectedMorphsUI((prev) => [...prev, { ...morph, color_hex }]);
+
+      setSelectedMorphs((prev) => [...prev, { ...morph, color_hex }]);
       setFilters((prev) => ({
         ...prev,
-        morphs: [...prev.morphs, String(morph.id)],
+        morphs: [...prev.morphs, String(morph.name)],
       }));
     }
   };
 
-  const handleAddMultipleMorphs = (morphsToAdd: Morph[]) => {
-    const newMorphs = morphsToAdd
-      .filter(
-        (addMorph) =>
-          !selectedMorphsUI.some((selMorph) => selMorph.id === addMorph.id)
-      )
-      .map((morph) => ({ ...morph, color_hex: "#ccc" })); // Add default color
-
-    setSelectedMorphsUI((prev) => [...prev, ...newMorphs]);
-  };
-
   const handleRemoveMorph = (morphToRemove: SingleSelectedMorph) => {
-    setSelectedMorphsUI((prev) =>
-      prev.filter((m) => m.id !== morphToRemove.id)
-    );
+    setSelectedMorphs((prev) => prev.filter((m) => m.id !== morphToRemove.id));
     setFilters((prev) => ({
       ...prev,
-      morphs: prev.morphs.filter((id) => id !== String(morphToRemove.id)),
+      morphs: prev.morphs.filter((name) => name !== morphToRemove.name),
     }));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleResetFilters = () => {
+    const initialFilters = {
+      minPrice: "",
+      maxPrice: "",
+      sex: [],
+      breeders: [],
+      years: [],
+      productStatus: [],
+      morphs: [],
+    };
+
+    setFilters(initialFilters);
+    setSelectedMorphs([]);
+
+    // router.push(pathname);
+    // onClose();
   };
 
   if (!isOpen) return null;
@@ -154,15 +202,21 @@ export function FilterSheet({
             </label>
             <div className="flex items-center gap-4">
               <input
-                type="text"
+                type="number"
+                name="minPrice"
                 placeholder="Min amount"
                 className="w-full rounded-lg border-gray-300 text-sm"
+                value={filters.minPrice}
+                onChange={handleInputChange}
               />
               <span className="text-gray-400">-</span>
               <input
-                type="text"
+                type="number"
+                name="maxPrice"
                 placeholder="Max amount"
                 className="w-full rounded-lg border-gray-300 text-sm"
+                value={filters.maxPrice}
+                onChange={handleInputChange}
               />
             </div>
           </div>
@@ -197,10 +251,7 @@ export function FilterSheet({
                     quality={100}
                     className="mx-auto"
                   />
-                  <label
-                    htmlFor="sex-male"
-                    className="text-sm text-gray-800"
-                  >
+                  <label htmlFor="sex-male" className="text-sm text-gray-800">
                     Male
                   </label>
                 </div>
@@ -229,10 +280,7 @@ export function FilterSheet({
                     quality={100}
                     className="mx-auto"
                   />
-                  <label
-                    htmlFor="sex-female"
-                    className="text-sm text-gray-800"
-                  >
+                  <label htmlFor="sex-female" className="text-sm text-gray-800">
                     Female
                   </label>
                 </div>
@@ -321,19 +369,6 @@ export function FilterSheet({
             />
           </div>
 
-          <div>
-            <p className="text-sm font-semibold text-gray-800 mb-2">
-              Morph (Bulk Add on Enter)
-            </p>
-            <BulkMorphSelector
-              allMorphs={allMorphs}
-              selectedMorphs={selectedMorphsUI}
-              onAddMorph={handleAddMorph}
-              onAddMultipleMorphs={handleAddMultipleMorphs}
-              onRemoveMorph={handleRemoveMorph}
-            />
-          </div>
-
           {/* Status */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -394,7 +429,10 @@ export function FilterSheet({
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4 mt-auto pt-6">
-          <button className="cursor-pointer py-3 px-4 min-w-[160px] inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-neutral-500 !text-neutral-500 hover:border-neutral-800 hover:text-neutral-800 focus:outline-none focus:border-neutral-800 focus:text-neutral-800 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-400 dark:!text-neutral-400 dark:hover:text-neutral-300 dark:hover:border-neutral-300">
+          <button
+            className="cursor-pointer py-3 px-4 min-w-[160px] inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-neutral-500 !text-neutral-500 hover:border-neutral-800 hover:text-neutral-800 focus:outline-none focus:border-neutral-800 focus:text-neutral-800 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-400 dark:!text-neutral-400 dark:hover:text-neutral-300 dark:hover:border-neutral-300"
+            onClick={handleResetFilters}
+          >
             Reset
           </button>
           <button
