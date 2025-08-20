@@ -42,7 +42,7 @@ export function LandingView({ farms }: LandingViewProps) {
           <button
             type="button"
             className="py-3 px-4 mt-6 min-w-[107px] min-h-[47px] inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-white text-black hover:bg-gray-200 focus:outline-none focus:bg-gray-400"
-            onClick={() => router.push("/login")} // Example route
+            onClick={() => router.push("/products")}
           >
             Shop Now
           </button>
