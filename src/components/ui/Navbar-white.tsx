@@ -73,7 +73,7 @@ export function Navbar() {
           <div className="flex flex-col gap-5 mt-5 sm:flex-row sm:items-center sm:justify-end sm:mt-0 sm:ps-5">
             <a
               className="font-medium text-center text-blue-500 focus:outline-hidden"
-              href="#"
+              href="./"
               aria-current="page"
             >
               Home
