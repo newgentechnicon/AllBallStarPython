@@ -7,7 +7,7 @@ import { Navbar } from "@/components/ui/Navbar";
 import type { Farm } from "@/features/farm/farm.types";
 import { useState } from "react";
 import { Footer } from "@/components/ui/Footer";
-import { ScrollButton } from '@/components/ui/ScrollButton';
+import { ScrollButton } from "@/components/ui/ScrollButton";
 
 // 2. กำหนด props interface
 interface LandingViewProps {
@@ -62,12 +62,17 @@ export function LandingView({ farms }: LandingViewProps) {
               return (
                 <Image
                   key={farm.id}
-                  src={farm.logo_url || "https://placehold.co/100x100/e2e8f0/e2e8f0"}
+                  src={
+                    farm.logo_url ||
+                    "https://placehold.co/100x100/e2e8f0/e2e8f0"
+                  }
                   alt={farm.name}
                   width={100}
                   height={100}
                   className={`w-12 h-12 rounded-full object-cover cursor-pointer transition-all duration-300 hover:z-10 ${
-                    isSelected ? 'border-2 border-black scale-110' : 'border-2 border-transparent'
+                    isSelected
+                      ? "border-2 border-black scale-110"
+                      : "border-2 border-transparent"
                   }`}
                   onClick={() => setFeaturedFarm(farm)}
                 />
@@ -111,28 +116,50 @@ export function LandingView({ farms }: LandingViewProps) {
         )}
 
         {/* The Beginning Section */}
-        <section className="py-20 px-6 max-w-2xl mx-auto text-center">
-          <h3 className="text-center text-sm font-regular tracking-[0.2em] text-white uppercase">
-            Our Story
-          </h3>
-          <h2 className="text-center text-xl font-bold tracking-[0.1em] text-white uppercase mb-8">
-            The Beginning
-          </h2>
-          <p className="text-[#9CA3AF] text-base font-medium leading-relaxed text-start">
-            Founded in 2023, All Star Ball Python is a collective of seven
-            passionate and dedicated ball python breeders united by a shared
-            mission: to produce high-quality, healthy, and visually stunning
-            morph combinations. Each of our individual breeder brings unique
-            expertise and creativity to the group, allowing us to offer a wide
-            and diverse range of beautiful ball pythons. 
-            <br />
-            <br />
-            We, All Star breeders,
-            aren’t just breeders, but enthusiasts driven by deep love for these
-            incredible animals. Our team ensures high and consistent standards
-            in care, health, and innovation, making us a trusted name for ball
-            python lovers, collectors, and breeders alike.
-          </p>
+        <section className="w-full bg-neutral-950">
+          <div className="py-20 px-6 max-w-2xl mx-auto text-center">
+            <h3 className="text-center text-sm font-regular tracking-[0.2em] text-white uppercase">
+              Our Story
+            </h3>
+            <h2 className="text-center text-xl font-bold tracking-[0.1em] text-white uppercase mb-8">
+              The Beginning
+            </h2>
+            <div className="flex items-center justify-center">
+              <Image
+                src="/images/banner.jpg"
+                alt="Company Logo"
+                width={343}
+                height={250}
+                quality={100}
+                className="rounded-lg mb-8"
+              />
+            </div>
+            <div className="flex items-center justify-center">
+              <Image
+                src="/images/banner-2.png"
+                alt="Company Logo"
+                width={343}
+                height={250}
+                quality={100}
+                className="rounded-lg mb-8"
+              />
+            </div>
+            <p className="text-[#9CA3AF] text-base font-medium leading-relaxed text-start">
+              Founded in 2023, All Star Ball Python is a collective of seven
+              passionate and dedicated ball python breeders united by a shared
+              mission: to produce high-quality, healthy, and visually stunning
+              morph combinations. Each of our individual breeder brings unique
+              expertise and creativity to the group, allowing us to offer a wide
+              and diverse range of beautiful ball pythons.
+              <br />
+              <br />
+              We, All Star breeders, aren’t just breeders, but enthusiasts
+              driven by deep love for these incredible animals. Our team ensures
+              high and consistent standards in care, health, and innovation,
+              making us a trusted name for ball python lovers, collectors, and
+              breeders alike.
+            </p>
+          </div>
         </section>
       </main>
 

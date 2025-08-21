@@ -29,12 +29,12 @@ const BackIcon = () => (
 
 interface ProductShopDetailViewProps {
   product: ProductDetail;
-  farm: FarmContactInfo;
+  farms: FarmContactInfo[];
 }
 
 export function ProductShopDetailView({
   product,
-  farm,
+  farms,
 }: ProductShopDetailViewProps) {
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -257,8 +257,8 @@ export function ProductShopDetailView({
                 <div className="col-span-2">
                   <p className="text-gray-500">Morphs :</p>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {product.product_morphs.map((pm, index) => (
-                      <MorphTag key={index} morph={pm} />
+                    {product.product_morphs.map((pm) => (
+                      <MorphTag key={pm.morphs?.id} morph={pm} />
                     ))}
                   </div>
                 </div>
@@ -273,9 +273,17 @@ export function ProductShopDetailView({
             )}
           </div>
         </div>
-
-        <div className="px-4 pb-8">
-          <ContactCard farm={farm} />
+      </div>
+      <div className=" w-full bg-neutral-500">
+        <div className="px-4 pb-8 space-y-4 max-w-md mx-auto">
+          <h2 className="text-white font-bold text-xl pt-3">FARM CONTACT</h2>
+          <p className="text-white font-regular text-sm">
+            In case that you interested with this product, you can contact the
+            following shop below
+          </p>
+          {farms.map((farmItem) => (
+            <ContactCard key={farmItem.id} farm={farmItem} />
+          ))}
         </div>
       </div>
       <Footer />

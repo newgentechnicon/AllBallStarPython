@@ -43,17 +43,16 @@ export async function getAllFarms(): Promise<Pick<Farm, 'id' | 'name' | 'logo_ur
 export async function getFarmById(id: number): Promise<FarmContactInfo | null> {
   const supabase = await createClient();
 
-  // ป้องกันการ query โดยไม่จำเป็นถ้าไม่มี farm_id
-  if (id === 0) return null;
+  if (!id || isNaN(id) || id <= 0) return null;
 
   const { data: farm, error } = await supabase
     .from('farms')
     .select(
-      'name, logo_url, breeder_name, contact_instagram, contact_facebook, contact_line, contact_whatsapp, contact_wechat'
+      'id, name, logo_url, breeder_name, contact_instagram, contact_facebook, contact_line, contact_whatsapp, contact_wechat'
     )
     .eq('id', id)
-    .maybeSingle(); // ใช้ .maybeSingle() เพื่อให้ได้ผลลัพธ์เป็น object เดียว หรือ null
-
+    .maybeSingle();
+    
   if (error) {
     console.error(`Error fetching farm by ID (${id}):`, error);
     return null;
