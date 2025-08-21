@@ -32,6 +32,7 @@ export interface EditFarmState {
 
 export type FarmContactInfo = Pick<
   Farm,
+  | 'id'
   | 'name'
   | 'logo_url'
   | 'breeder_name'

@@ -44,7 +44,7 @@ function getSocialUrl(type: string, id?: string | null): string | null {
 }
 
 export const ContactCard = ({ farm }: { farm: FarmContactInfo }) => (
-  <div className="bg-[#1C1C1C] rounded-2xl p-6 w-full max-w-sm mx-auto">
+  <div className="bg-[#1C1C1C] rounded-2xl p-6 w-full max-w-md mx-auto">
     <div className="flex flex-col items-center text-center">
       <Image
         src={farm.logo_url || "https://placehold.co/100x100/333/fff?text=Logo"}

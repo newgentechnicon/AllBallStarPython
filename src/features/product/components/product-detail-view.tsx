@@ -243,8 +243,8 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
               <div className="col-span-2">
                 <p className="text-gray-500">Morphs :</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {product.product_morphs.map((pm, index) => (
-                    <MorphTag key={index} morph={pm} />
+                  {product.product_morphs.map((pm) => (
+                    <MorphTag key={pm.morphs?.id} morph={pm} />
                   ))}
                 </div>
               </div>
