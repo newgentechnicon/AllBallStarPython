@@ -10,7 +10,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.id}`} className="group block">
       <div className="rounded-xl border border-gray-200 bg-white p-2 shadow-sm transition-shadow hover:shadow-lg">
-        <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
           <Image
             src={
               product.image_urls?.[0] ||

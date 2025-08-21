@@ -29,9 +29,19 @@ export function LandingView({ farms }: LandingViewProps) {
 
       <main>
         {/* Hero Section */}
-        <section className="relative flex flex-col items-start justify-end min-h-screen text-start px-8 pb-20">
+        <section
+          className="relative flex flex-col items-start justify-end min-h-screen text-start px-8 pb-20"
+          style={{
+            // --- แก้ไขบรรทัดนี้ ---
+            backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 1), transparent), url('/images/home-bg-1.jpg')`,
+            // --- สิ้นสุดส่วนที่แก้ไข ---
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
           <h1
-            className="text-6xl font-medium tracking-widest uppercase text-neutral-400 bg-clip-text"
+            className="text-6xl font-medium tracking-widest uppercase text-neutral-300 bg-clip-text"
             style={{ fontFamily: "var(--font-montserrat)" }}
           >
             All <br /> Star <br /> Ball <br /> Python
@@ -124,7 +134,7 @@ export function LandingView({ farms }: LandingViewProps) {
             <h2 className="text-center text-xl font-bold tracking-[0.1em] text-white uppercase mb-8">
               The Beginning
             </h2>
-            <div className="flex items-center justify-center">
+            {/* <div className="flex items-center justify-center">
               <Image
                 src="/images/banner.jpg"
                 alt="Company Logo"
@@ -133,7 +143,7 @@ export function LandingView({ farms }: LandingViewProps) {
                 quality={100}
                 className="rounded-lg mb-8"
               />
-            </div>
+            </div> */}
             <div className="flex items-center justify-center">
               <Image
                 src="/images/banner-2.png"

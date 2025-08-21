@@ -63,24 +63,38 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
     <div className="bg-white mx-auto max-w-2xl min-h-screen relative">
       <div className="container mx-auto max-w-md pb-24">
         {/* Header and Breadcrumbs */}
-        <div className="p-4">
+        <div className="p-4 flex justify-between items-center">
+          {" "}
           <button
-            onClick={() => router.push("/farm/products")}
-            className="flex items-center gap-1 text-gray-700 font-semibold mb-4"
+            onClick={() => router.push("/products")}
+            className="flex items-center gap-1 text-gray-700 font-semibold" // ลบ mb-4 ออก
           >
             <BackIcon />
             Back
           </button>
+          <div className="flex items-center gap-2">
+            {" "}
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`h-2 w-2 rounded-full transition-colors ${
+                  currentImageIndex === index ? "bg-gray-800" : "bg-gray-300"
+                }`}
+                aria-label={`Go to image ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Image Slider */}
         <div
-          className="relative mx-4 aspect-square overflow-hidden rounded-lg shadow-lg select-none"
+          className="relative w-full aspect-[4/3] overflow-hidden rounded-lg shadow-lg select-none"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp} // End drag if mouse leaves the area
+          onMouseLeave={handleMouseUp}
         >
           {images.length > 0 ? (
             images.map((imgUrl, index) => (
@@ -146,19 +160,6 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
               </button>
             </>
           )}
-          {/* Dots Indicator */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`h-2 w-2 rounded-full transition-colors ${
-                  currentImageIndex === index ? "bg-gray-800" : "bg-gray-300"
-                }`}
-                aria-label={`Go to image ${index + 1}`}
-              />
-            ))}
-          </div>
         </div>
 
         {/* Content */}

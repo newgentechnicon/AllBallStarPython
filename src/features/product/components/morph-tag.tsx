@@ -8,7 +8,7 @@ export function MorphTag({ morph }: { morph: MorphProp }) {
   const category = morph.morphs.morph_categories;
   const subCategory = morph.morphs.morph_sub_categories;
   const color = subCategory?.color_hex || category?.color_hex || "#6B7280";
-  const textColor = ["#65A30D", "#D97706"].includes(color) ? "#FFFFFF" : "#000000";
+  const textColor = ["#E5E5E5"].includes(color) ? "#000000" : "#FFFFFF";
 
   return (
     <span

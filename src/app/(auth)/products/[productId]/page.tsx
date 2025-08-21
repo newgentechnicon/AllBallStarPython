@@ -31,8 +31,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   if (product.farm_id) {
     farmIds.add(product.farm_id);
   }
-  farmIds.add(14);
-  farmIds.add(18);
+  if(product.farm_id !== 14 && product.farm_id !== 18) {
+    farmIds.add(14);
+    farmIds.add(18);
+  }
+
   const farmPromises = Array.from(farmIds).map(id => getFarmById(id));
   const farms = (await Promise.all(farmPromises))
     .filter((farm): farm is FarmContactInfo => farm !== null && farm !== undefined);
