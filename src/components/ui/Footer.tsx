@@ -33,7 +33,7 @@ export function Footer() {
             Contact Us
           </h3>
           <div className="flex gap-4">
-            <Link
+            {/* <Link
               href="#"
               className="flex p-3 w-12 h-12 bg-neutral-700 rounded-lg justify-center"
             >
@@ -44,9 +44,9 @@ export function Footer() {
                 height={25}
                 quality={100}
               />
-            </Link>
+            </Link> */}
             <Link
-              href="#"
+              href="https://www.facebook.com/share/1AuRVVDesS/?mibextid=wwXIfr"
               className="flex p-3 w-12 h-12 bg-neutral-700 rounded-lg justify-center"
             >
               <Image
@@ -58,7 +58,7 @@ export function Footer() {
               />
             </Link>
             <Link
-              href="#"
+              href="https://line.me/ti/g2/_7vS4irUxIEs54wzrxFwG1hlUiVf7IkTb3moag?utm_source=invitation&utm_medium=link_copy&utm_campaign=default"
               className="flex p-3 w-12 h-12 bg-neutral-700 rounded-lg justify-center"
             >
               <Image

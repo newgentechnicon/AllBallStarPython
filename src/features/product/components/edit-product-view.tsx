@@ -162,7 +162,23 @@ export function EditProductView({ product, allMorphs }: EditProductViewProps) {
         </div>
 
         <form action={formActionWithFiles} className="p-4 space-y-6" noValidate>
-          <input type="hidden" name="id" value={product.id} />
+          <div>
+            <input type="hidden" name="id" value={product.id} />
+
+            <label htmlFor="product_id" className="block text-sm font-semibold text-gray-700 mb-1">
+              Product ID*
+            </label>
+            <input
+              type="text"
+              id="product_id"
+              name="product_id"
+              className={inputClassName(!!state.errors.product_id)}
+              defaultValue={product.product_id ?? ""}
+              minLength={5}
+              maxLength={15}
+            />
+            {state.errors.product_id && <p className="mt-1 text-sm text-red-600">{state.errors.product_id[0]}</p>}
+          </div>
 
           <div>
             <label

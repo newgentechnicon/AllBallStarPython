@@ -11,6 +11,9 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const productSchema = z.object({
+  product_id: z.string()
+    .min(5, 'Product ID must be at least 5 characters.')
+    .max(15, 'Product ID must be at most 15 characters.'),
   name: z.string().min(1, 'Product name is required.'),
   price: z.coerce.number().refine(val => typeof val === 'number' && !isNaN(val), { message: 'Price must be a number.' }).positive('Price must be positive.'),
   sex: z.string().min(1, 'Sex is required.'),
@@ -29,6 +32,9 @@ const productSchema = z.object({
 
 const editProductSchema = z.object({
   id: z.coerce.number(),
+  product_id: z.string()
+    .min(5, 'Product ID must be at least 5 characters.')
+    .max(15, 'Product ID must be at most 15 characters.'),
   name: z.string().min(1, 'Name is required.'),
   price: z.preprocess((val) => (val === "" ? null : Number(val)), z.number({ error: "Price must be a number." }).positive("Price must be positive.").nullable()),
   sex: z.string().min(1, 'Sex is required.'),
@@ -111,6 +117,7 @@ export async function createProductAction(prevState: CreateProductState, formDat
   if (!farm) return { errors: { _form: "Farm not found." } };
 
   const validatedFields = productSchema.safeParse({
+    product_id: formData.get('product_id'),
     name: formData.get('name'),
     price: formData.get('price'),
     sex: formData.get('sex'),
@@ -138,36 +145,36 @@ export async function createProductAction(prevState: CreateProductState, formDat
     }
 
     // Generate product_id
-    const today = new Date();
-    const yy = String(today.getFullYear()).slice(-2);
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
+    // const today = new Date();
+    // const yy = String(today.getFullYear()).slice(-2);
+    // const mm = String(today.getMonth() + 1).padStart(2, '0');
+    // const dd = String(today.getDate()).padStart(2, '0');
 
     // Fetch the last product_id created today to determine the next numbering
-    const { data: latestProduct } = await supabase
-      .from('products')
-      .select('product_id')
-      .ilike('product_id', `GK-${yy}${mm}${dd}-%`)
-      .order('product_id', { ascending: false })
-      .limit(1)
-      .single();
+    // const { data: latestProduct } = await supabase
+    //   .from('products')
+    //   .select('product_id')
+    //   .ilike('product_id', `GK-${yy}${mm}${dd}-%`)
+    //   .order('product_id', { ascending: false })
+    //   .limit(1)
+    //   .single();
 
-    let numbering = 1;
-    if (latestProduct && latestProduct.product_id) {
-      const lastNumberPart = latestProduct.product_id.split('-').pop();
-      if (lastNumberPart) {
-        const lastNumber = parseInt(lastNumberPart, 10);
-        if (!isNaN(lastNumber)) {
-          numbering = lastNumber + 1;
-        }
-      }
-    }
+    // let numbering = 1;
+    // if (latestProduct && latestProduct.product_id) {
+    //   const lastNumberPart = latestProduct.product_id.split('-').pop();
+    //   if (lastNumberPart) {
+    //     const lastNumber = parseInt(lastNumberPart, 10);
+    //     if (!isNaN(lastNumber)) {
+    //       numbering = lastNumber + 1;
+    //     }
+    //   }
+    // }
 
-    const productId = `GK-${yy}${mm}${dd}-${String(numbering).padStart(3, '0')}`;
+    // const productId = `GK-${yy}${mm}${dd}-${String(numbering).padStart(3, '0')}`;
 
     const { data: newProduct, error: insertError } = await supabase.from('products').insert({
       ...productData,
-      product_id: productId, // Add the generated product_id
+      // product_id: productId,
       farm_id: farm.id,
       user_id: user.id,
       image_urls: imageUrls,
@@ -196,6 +203,7 @@ export async function updateProductAction(prevState: EditProductState, formData:
 
   const validatedFields = editProductSchema.safeParse({
     id: formData.get('id'),
+    product_id: formData.get('product_id'),
     name: formData.get('name'),
     price: formData.get('price'),
     sex: formData.get('sex'),

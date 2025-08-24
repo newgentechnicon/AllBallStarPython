@@ -57,6 +57,7 @@ export interface EditProductState {
   success?: boolean;
   message?: string;
   errors: {
+    product_id?: string[];
     name?: string[];
     price?: string[];
     sex?: string[];

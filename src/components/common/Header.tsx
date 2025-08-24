@@ -70,13 +70,16 @@ export default function AppNavbar() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           {/* Left Side: Logo */}
           <div className="flex items-center">
-            <Image
-              src="/images/logo-black.png" // แก้ไข path ของโลโก้คุณ
-              alt="Company Logo"
-              width={40}
-              height={40}
-              quality={100}
-            />
+            <a href="/farm">
+              <Image
+                src="/images/logo-black.png" // แก้ไข path ของโลโก้คุณ
+                alt="Company Logo"
+                width={40}
+                height={40}
+                quality={100}
+              />
+            </a>
+            
           </div>
 
           {/* Right Side: Hamburger Menu */}

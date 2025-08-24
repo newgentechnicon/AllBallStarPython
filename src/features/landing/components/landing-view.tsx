@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Navbar } from "@/components/ui/Navbar";
 import type { Farm } from "@/features/farm/farm.types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Footer } from "@/components/ui/Footer";
 import { ScrollButton } from "@/components/ui/ScrollButton";
 
@@ -20,6 +20,26 @@ interface LandingViewProps {
 export function LandingView({ farms }: LandingViewProps) {
   const router = useRouter();
 
+  const [windowWidth, setWindowWidth] = useState(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    if (typeof window !== "undefined") {
+      handleResize(); 
+      window.addEventListener("resize", handleResize);
+    }
+    
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const mobileImage = "/images/home-bg-1.jpg";
+  const desktopImage = "/images/home-bg-2.jpg";
+
+  const imageUrl = windowWidth >= 768 ? desktopImage : mobileImage;
+
   const [featuredFarm, setFeaturedFarm] = useState(farms[0] || null);
 
   return (
@@ -32,9 +52,7 @@ export function LandingView({ farms }: LandingViewProps) {
         <section
           className="relative flex flex-col items-start justify-end min-h-screen text-start px-8 pb-20"
           style={{
-            // --- แก้ไขบรรทัดนี้ ---
-            backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 1), transparent), url('/images/home-bg-1.jpg')`,
-            // --- สิ้นสุดส่วนที่แก้ไข ---
+            backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 1), transparent), url('${imageUrl}')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",

@@ -66,7 +66,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
         <div className="p-4 flex justify-between items-center">
           {" "}
           <button
-            onClick={() => router.push("/products")}
+            onClick={() => router.push("/farm/products")}
             className="flex items-center gap-1 text-gray-700 font-semibold" // ลบ mb-4 ออก
           >
             <BackIcon />
