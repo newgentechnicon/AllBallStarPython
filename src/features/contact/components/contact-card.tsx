@@ -51,7 +51,7 @@ export const ContactCard = ({ farm }: { farm: FarmContactInfo }) => (
         alt={`${farm.name} Logo`}
         width={80}
         height={80}
-        className="rounded-full object-cover border-2 border-neutral-700"
+        className="w-18 h-18 rounded-full object-cover border-2 border-neutral-700"
       />
       <h3 className="mt-4 text-xl font-bold uppercase tracking-wider text-white">
         {farm.name}

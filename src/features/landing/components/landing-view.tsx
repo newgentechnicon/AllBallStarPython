@@ -28,10 +28,10 @@ export function LandingView({ farms }: LandingViewProps) {
     };
 
     if (typeof window !== "undefined") {
-      handleResize(); 
+      handleResize();
       window.addEventListener("resize", handleResize);
     }
-    
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -77,14 +77,14 @@ export function LandingView({ farms }: LandingViewProps) {
         </section>
 
         {/* Members Section */}
-        <section className="pt-20 pb-10 px-4 bg-white">
+        <section className="pt-20 pb-10 px-4 bg-white" >
           <h3 className="text-center text-sm font-regular tracking-[0.2em] text-black uppercase">
             About Us
           </h3>
           <h2 className="text-center text-xl font-bold tracking-[0.1em] text-black uppercase mb-8">
             All Members
           </h2>
-          <div className="flex justify-center space-x-4">
+          <div className="flex flex-wrap justify-center gap-6 max-w-2xl mx-auto">
             {farms.map((farm) => {
               const isSelected = featuredFarm?.id === farm.id;
               return (
@@ -100,7 +100,7 @@ export function LandingView({ farms }: LandingViewProps) {
                   className={`w-12 h-12 rounded-full object-cover cursor-pointer transition-all duration-300 hover:z-10 ${
                     isSelected
                       ? "border-2 border-black scale-110"
-                      : "border-2 border-transparent"
+                      : "border-1 border-neutral-300"
                   }`}
                   onClick={() => setFeaturedFarm(farm)}
                 />
@@ -111,7 +111,7 @@ export function LandingView({ farms }: LandingViewProps) {
 
         {/* Featured Card Section */}
         {featuredFarm && (
-          <section className="px-4 pb-5 bg-white">
+          <section className="px-4 pb-5 pt-5 bg-white">
             <div className="max-w-sm mx-auto bg-white rounded-xl overflow-hidden border border-gray-300">
               {/* Image container */}
               <div className="relative h-96 w-full">
