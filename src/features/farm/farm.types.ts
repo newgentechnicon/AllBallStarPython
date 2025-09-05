@@ -30,6 +30,12 @@ export interface EditFarmState {
   fields?: Partial<Farm>;
 }
 
+export type FarmWithProductCount = Farm & {
+  products: {
+    count: number;
+  }[];
+};
+
 export type FarmContactInfo = Pick<
   Farm,
   | 'id'

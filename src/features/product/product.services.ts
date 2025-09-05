@@ -185,6 +185,8 @@ export async function getAllProducts(
     `
     )
     .is("deleted_at", null)
+    .neq("status", "Inactive")
+    .neq("status", "Sold Out")
     .order("created_at", { ascending: false });
 
   if (filters.q) {

@@ -1,13 +1,13 @@
 import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import type { Farm, FarmContactInfo } from './farm.types';
+import type { Farm, FarmContactInfo, FarmWithProductCount } from './farm.types';
 
 /**
  * ดึงข้อมูลฟาร์มของผู้ใช้ที่ล็อกอินอยู่
  * @returns Promise<Farm | null> ข้อมูลฟาร์ม หรือ null ถ้าไม่พบ
  */
-export async function getFarmData(): Promise<Farm | null> {
+export async function getFarmData(): Promise<FarmWithProductCount | null> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -15,13 +15,21 @@ export async function getFarmData(): Promise<Farm | null> {
     redirect('/login');
   }
 
-  const { data: farm } = await supabase
+  const { data: farm, error } = await supabase
     .from('farms')
-    .select('*')
+    .select(`
+      *,
+      products(count)
+    `)
     .eq('user_id', user.id)
     .maybeSingle();
 
-  return farm;
+  if (error) {
+    console.error("Error fetching farm:", error);
+    return null;
+  }
+
+  return farm as FarmWithProductCount | null;
 }
 
 export async function getAllFarms(): Promise<Pick<Farm, 'id' | 'name' | 'logo_url' | 'information' | 'breeder_name' | 'contact_instagram' | 'contact_facebook' | 'contact_line' | 'contact_whatsapp' | 'contact_wechat'>[]> {

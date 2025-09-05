@@ -1,9 +1,9 @@
-import type { Farm } from '@/features/farm/farm.types';
+import type { FarmWithProductCount } from "@/features/farm/farm.types";
 import { FarmDisplay } from './farm-display';
 import { CreateFarmPrompt } from './create-farm-prompt';
 
 interface FarmViewProps {
-  farm: Farm | null;
+  farm: FarmWithProductCount | null;
 }
 
 export function FarmView({ farm }: FarmViewProps) {

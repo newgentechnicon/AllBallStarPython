@@ -1,12 +1,15 @@
 import Image from "next/image";
-import type { Farm } from "@/features/farm/farm.types";
+import type { FarmWithProductCount } from "@/features/farm/farm.types";
 import { PrimaryButton, SecondaryButton } from "@/components/ui/Button";
 
 interface FarmDisplayProps {
-  farm: Farm;
+  farm: FarmWithProductCount;
 }
 
 export function FarmDisplay({ farm }: FarmDisplayProps) {
+
+  const productCount = farm.products?.[0]?.count ?? 0;
+
   return (
     <div className="w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg dark:bg-gray-800">
       <div className="relative w-full" style={{ aspectRatio: "1 / 1" }}>
@@ -42,7 +45,7 @@ export function FarmDisplay({ farm }: FarmDisplayProps) {
             quality={100}
             style={{ objectFit: "contain" }}
           />
-          <span className="text-sm font-medium">0</span>
+          <span className="text-sm font-medium">{productCount}</span>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4">

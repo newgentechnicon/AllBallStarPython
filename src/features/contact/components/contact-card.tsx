@@ -37,7 +37,7 @@ function getSocialUrl(type: string, id?: string | null): string | null {
     case "whatsapp":
       return `https://wa.me/${id}`;
     case "wechat":
-      return `weixin://dl/chat?${id}`;
+      return `weixin://dl/add?${id}`;
     default:
       return null;
   }

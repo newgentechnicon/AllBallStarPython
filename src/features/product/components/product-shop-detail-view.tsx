@@ -274,15 +274,29 @@ export function ProductShopDetailView({
           </div>
         </div>
       </div>
-      <div className=" w-full bg-neutral-500">
+      <div className="w-full bg-neutral-500">
         <div className="px-4 pb-8 space-y-4 max-w-md mx-auto">
           <h2 className="text-white font-bold text-xl pt-3">FARM CONTACT</h2>
           <p className="text-white font-regular text-sm">
             In case that you interested with this product, you can contact the
             following shop below
           </p>
-          {farms.map((farmItem) => (
-            <ContactCard key={farmItem.id} farm={farmItem} />
+
+          {farms.map((farmItem, index) => (
+            <div key={farmItem.id}>
+              {/* ถ้าไม่ใช่อันแรกและ farms มากกว่า 1 ให้แสดง International Contact */}
+              {index === 1 && (
+                <div className="relative flex items-center my-4">
+                  <div className="flex-grow border-t border-gray-400"></div>
+                  <span className="flex-shrink mx-4 text-white text-sm font-semibold uppercase">
+                    International Contact
+                  </span>
+                  <div className="flex-grow border-t border-gray-400"></div>
+                </div>
+              )}
+
+              <ContactCard farm={farmItem} />
+            </div>
           ))}
         </div>
       </div>
