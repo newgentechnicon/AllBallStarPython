@@ -295,7 +295,7 @@ export function ProductShopDetailView({
                 </div>
               )}
 
-              <ContactCard farm={farmItem} />
+              <ContactCard farm={farmItem}  />
             </div>
           ))}
         </div>
