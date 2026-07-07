@@ -1,5 +1,11 @@
-import { LoginView } from '@/features/auth/components/login-view';
+import { LoginView } from '@/features/auth/components/login-view'
 
-export default function LoginPage() {
-  return <LoginView />;
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>
+}) {
+  const { next } = await searchParams
+
+  return <LoginView next={next} />
 }

@@ -7,7 +7,7 @@ import type { LoginFormState } from '@/features/auth/auth.types';
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from '@/components/ui/PasswordInput';
 
-export function LoginView() {
+export function LoginView({ next }: { next?: string }) {
   const initialState: LoginFormState = { errors: {} };
   const [formState, formAction] = useActionState(login, initialState);
 
@@ -36,6 +36,7 @@ export function LoginView() {
           </h2>
 
           <form action={formAction} className="mt-8 space-y-6" noValidate>
+            {next && <input type="hidden" name="next" value={next} />}
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="sr-only">Email</label>

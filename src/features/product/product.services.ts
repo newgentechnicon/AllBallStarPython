@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import type { ProductsPageData, ProductWithMorphs } from "./product.types";
 import type { ProductDetail } from "./product.types";
+import type { MorphCategory } from "./components/morph-selector";
 
 interface ProductFilters {
   q?: string;
@@ -108,7 +109,7 @@ export async function getProductsPageData(params: {
 
   return {
     farm,
-    products: (data as ProductWithMorphs[]) || [],
+    products: (data ?? []) as unknown as ProductWithMorphs[],
     // totalCount นี้จะเปลี่ยนไปตาม filter (status/search) ซึ่งถูกต้องแล้วสำหรับการคำนวณ totalPages
     totalCount: totalCount || 0,
     // statusCounts ใช้สำหรับแสดงตัวเลขบนป้าย Tab แต่ละอัน
@@ -157,7 +158,7 @@ export async function getProductById(
  * Fetches all morphs, structured by category and sub-category.
  * @returns {Promise<any>} Structured morph data.
  */
-export async function getStructuredMorphs() {
+export async function getStructuredMorphs(): Promise<MorphCategory[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_morphs_structured");
   console.log('get_morphs_structured : ' + data)
@@ -165,7 +166,7 @@ export async function getStructuredMorphs() {
     console.error("Error fetching structured morphs:", error);
     return [];
   }
-  return data;
+  return (data ?? []) as MorphCategory[];
 }
 
 export async function getAllProducts(
@@ -274,7 +275,7 @@ export async function getShopFilterData() {
   }
 
   // Get unique, non-null years and sort them
-  const years = [...new Set(yearsData.map((p) => p.year).filter(Boolean))].sort(
+  const years = [...new Set(yearsData.map((p) => p.year).filter((year): year is string => !!year))].sort(
     (a, b) => b.localeCompare(a)
   );
 

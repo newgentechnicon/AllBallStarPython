@@ -218,18 +218,59 @@ export async function updateProductAction(prevState: EditProductState, formData:
   }
 
   const { id, morphs, existingImageUrls, ...productData } = validatedFields.data;
-  const newImageFiles = formData.getAll('newImages') as File[];
+  const newImageFiles = formData
+    .getAll('newImages')
+    .filter((file): file is File => file instanceof File && file.size > 0);
+
+  if (newImageFiles.some((file) => file.size > MAX_FILE_SIZE)) {
+    return {
+      errors: { images: [`Max file size is 5MB.`] },
+      fields: Object.fromEntries(formData.entries()),
+    };
+  }
+
+  if (newImageFiles.some((file) => !ACCEPTED_IMAGE_TYPES.includes(file.type))) {
+    return {
+      errors: { images: ['.jpg, .jpeg, .png and .webp files are accepted.'] },
+      fields: Object.fromEntries(formData.entries()),
+    };
+  }
+
+  const finalImageCount = (existingImageUrls?.length || 0) + newImageFiles.length;
+  if (finalImageCount < 1) {
+    return {
+      errors: { images: ['At least one image is required.'] },
+      fields: Object.fromEntries(formData.entries()),
+    };
+  }
+
+  if (finalImageCount > 3) {
+    return {
+      errors: { images: ['You can only upload a maximum of 3 pictures.'] },
+      fields: Object.fromEntries(formData.entries()),
+    };
+  }
 
   try {
+    const { data: existingProduct, error: fetchProductError } = await supabase
+      .from('products')
+      .select('id, farm_id')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .single();
+
+    if (fetchProductError || !existingProduct) {
+      throw new Error("Product not found or you don't have permission to update it.");
+    }
+
     const uploadedImageUrls: string[] = [];
     for (const imageFile of newImageFiles) {
-      if (imageFile.size > 0) {
-        const filePath = `${user.id}/${id}/${Date.now()}_${imageFile.name}`;
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, imageFile);
-        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
-        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(filePath);
-        uploadedImageUrls.push(publicUrl);
-      }
+      const filePath = `${user.id}/${existingProduct.farm_id}/${Date.now()}_${imageFile.name}`;
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(filePath, imageFile);
+      if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(filePath);
+      uploadedImageUrls.push(publicUrl);
     }
     
     const finalImageUrls = [...(existingImageUrls || []), ...uploadedImageUrls];
@@ -237,7 +278,8 @@ export async function updateProductAction(prevState: EditProductState, formData:
     const { error: productUpdateError } = await supabase
       .from('products')
       .update({ ...productData, image_urls: finalImageUrls })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
     if (productUpdateError) throw productUpdateError;
 
     const { error: deleteError } = await supabase.from('product_morphs').delete().eq('product_id', id);
