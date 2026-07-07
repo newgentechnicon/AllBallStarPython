@@ -22,12 +22,12 @@ export function SearchBox() {
   const [, startTransition] = useTransition();
 
   useEffect(() => {
-    if (initialQuery) {
-      setInputValue(initialQuery);
-    }
+    setInputValue(initialQuery);
   }, [initialQuery]);
 
   useEffect(() => {
+    if (debouncedValue === initialQuery) return;
+
     const params = new URLSearchParams(searchParams.toString());
 
     if (debouncedValue) {
@@ -36,9 +36,7 @@ export function SearchBox() {
       params.delete('q');
     }
 
-    if (debouncedValue !== initialQuery) {
-        params.set('page', '1');
-    }
+    params.set('page', '1');
 
     startTransition(() => {
         router.replace(`${pathname}?${params.toString()}`);
