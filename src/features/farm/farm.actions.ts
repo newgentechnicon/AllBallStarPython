@@ -2,7 +2,8 @@
 
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { shopFilterDataTag } from '@/features/product/product.services';
 import type { CreateFarmState, EditFarmState } from './farm.types';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -65,6 +66,7 @@ export async function createFarmAction(prevState: CreateFarmState, formData: For
   }
 
   revalidatePath('/farm');
+  revalidateTag(shopFilterDataTag);
   return { success: true, message: 'Create farm successfully', errors: {} };
 }
 
@@ -108,5 +110,6 @@ export async function updateFarmAction(prevState: EditFarmState, formData: FormD
   }
 
   revalidatePath('/farm');
+  revalidateTag(shopFilterDataTag);
   return { success: true, message: 'Update farm successfully', errors: {} };
 }

@@ -1,7 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
-import type { ProductsPageData, ProductWithMorphs } from "./product.types";
+import type { ProductsPageData, ProductWithMorphs, PublicProductsPageData } from "./product.types";
 import type { ProductDetail } from "./product.types";
 import type { MorphCategory } from "./components/morph-selector";
 
@@ -14,7 +15,12 @@ interface ProductFilters {
   morphs?: string[];
   minPrice?: string;
   maxPrice?: string;
+  page?: string | string[];
 }
+
+export const PUBLIC_PRODUCTS_PER_PAGE = 24;
+const SHOP_FILTER_DATA_TAG = "shop-filter-data";
+const MORPH_FILTER_DATA_TAG = "morph-filter-data";
 
 /**
  * ดึงข้อมูลทั้งหมดที่จำเป็นสำหรับหน้าแสดงรายการสินค้า
@@ -53,34 +59,30 @@ export async function getProductsPageData(params: {
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
-  // 3. ดึงข้อมูล "จำนวน" สำหรับ Tabs (ส่วนนี้ทำงานถูกต้องอยู่แล้ว)
-  const fetchCount = async (status?: "Available" | "On Hold") => {
-    let query = supabase
-      .from("products")
-      .select("id", { count: "exact", head: true })
-      .eq("farm_id", farm.id)
-      .is("deleted_at", null);
-    if (status) query = query.eq("status", status);
-    const { count } = await query;
-    return count || 0;
-  };
-  const [allCount, availableCount, onHoldCount] = await Promise.all([
-    fetchCount(),
-    fetchCount("Available"),
-    fetchCount("On Hold"),
-  ]);
+  const { data: statusCountRows, error: statusCountError } = await supabase.rpc(
+    "get_product_status_counts",
+    { p_farm_id: farm.id }
+  );
+  if (statusCountError) {
+    console.error("Product status count fetch error:", statusCountError);
+  }
   const statusCounts = {
-    All: allCount,
-    Available: availableCount,
-    "On Hold": onHoldCount,
+    All: 0,
+    Available: 0,
+    "On Hold": 0,
   };
+  for (const row of statusCountRows ?? []) {
+    if (row.status === "All" || row.status === "Available" || row.status === "On Hold") {
+      statusCounts[row.status] = Number(row.total);
+    }
+  }
 
   // ✅ 4. [แก้ไข] สร้าง Query สำหรับดึง "ข้อมูลหลัก" ใหม่ทั้งหมด
 
   // เริ่มจาก base query
   let query = supabase
     .from("products")
-    .select("*, product_morphs(morphs(*))", { count: "exact" });
+    .select("id, name, status, product_id, sex, price, image_urls", { count: "exact" });
 
   // ใส่ Filter ที่ต้องมีเสมอ
   query = query.eq("farm_id", farm.id);
@@ -158,33 +160,70 @@ export async function getProductById(
  * Fetches all morphs, structured by category and sub-category.
  * @returns {Promise<any>} Structured morph data.
  */
-export async function getStructuredMorphs(): Promise<MorphCategory[]> {
+const getCachedStructuredMorphs = unstable_cache(
+  async (): Promise<MorphCategory[]> => {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_morphs_structured");
-  console.log('get_morphs_structured : ' + data)
   if (error) {
     console.error("Error fetching structured morphs:", error);
     return [];
   }
   return (data ?? []) as MorphCategory[];
+  },
+  ["structured-morphs"],
+  { revalidate: 3600, tags: [MORPH_FILTER_DATA_TAG] }
+);
+
+export async function getStructuredMorphs(): Promise<MorphCategory[]> {
+  return getCachedStructuredMorphs();
 }
 
 export async function getAllProducts(
   filters: ProductFilters = {}
 ): Promise<ProductWithMorphs[]> {
-  const supabase = await createClient();
+  const { products } = await getAllProductsPageData(filters);
+  return products;
+}
 
-  let query = supabase
-    .from("products")
-    .select(
-      `
-      *,
+export async function getAllProductsPageData(
+  filters: ProductFilters = {}
+): Promise<PublicProductsPageData> {
+  const supabase = await createClient();
+  const currentPage = Math.max(
+    1,
+    Number(Array.isArray(filters.page) ? filters.page[0] : filters.page) || 1
+  );
+  const from = (currentPage - 1) * PUBLIC_PRODUCTS_PER_PAGE;
+  const to = from + PUBLIC_PRODUCTS_PER_PAGE - 1;
+
+  const needsMorphJoin = !!filters.morphs?.length;
+  const selectColumns = needsMorphJoin
+    ? `
+      id,
+      name,
+      price,
+      sex,
+      year,
+      image_urls,
       farms ( name, logo_url ),
       product_morphs!inner (
+        morph_id,
         morphs!inner ( id, name )
       )
     `
-    )
+    : `
+      id,
+      name,
+      price,
+      sex,
+      year,
+      image_urls,
+      farms ( name, logo_url )
+    `;
+
+  let query = supabase
+    .from("products")
+    .select(selectColumns, { count: "exact" })
     .is("deleted_at", null)
     .neq("status", "Inactive")
     .neq("status", "Sold Out")
@@ -242,20 +281,24 @@ export async function getAllProducts(
     }
   }
 
-  const { data: products, error } = await query;
+  const { data: products, error, count } = await query.range(from, to);
 
   if (error) {
     console.error("Error fetching filtered products:", error);
-    return [];
+    return { products: [], totalCount: 0 };
   }
 
-  return products as ProductWithMorphs[];
+  return {
+    products: (products ?? []) as unknown as ProductWithMorphs[],
+    totalCount: count ?? 0,
+  };
 }
 
 /**
  * Fetches data required for the shop filter options.
  */
-export async function getShopFilterData() {
+const getCachedShopFilterData = unstable_cache(
+  async () => {
   const supabase = await createClient();
 
   // Fetch distinct breeders (farms)
@@ -280,4 +323,14 @@ export async function getShopFilterData() {
   );
 
   return { breeders: breeders || [], years };
+  },
+  ["shop-filter-data"],
+  { revalidate: 300, tags: [SHOP_FILTER_DATA_TAG] }
+);
+
+export async function getShopFilterData() {
+  return getCachedShopFilterData();
 }
+
+export const shopFilterDataTag = SHOP_FILTER_DATA_TAG;
+export const morphFilterDataTag = MORPH_FILTER_DATA_TAG;

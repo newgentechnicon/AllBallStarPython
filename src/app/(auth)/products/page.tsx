@@ -1,5 +1,6 @@
 import {
-  getAllProducts,
+  getAllProductsPageData,
+  PUBLIC_PRODUCTS_PER_PAGE,
   getShopFilterData,
   getStructuredMorphs,
 } from "@/features/product/product.services";
@@ -25,13 +26,18 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     morphs: Array.isArray(rawSearchParams.morphs) ? rawSearchParams.morphs : rawSearchParams.morphs ? [rawSearchParams.morphs] : [],
     minPrice: rawSearchParams.minPrice as string,
     maxPrice: rawSearchParams.maxPrice as string,
+    page: rawSearchParams.page,
   };
 
-  const [products, filterData, allMorphs] = await Promise.all([
-    getAllProducts(filters),
+  const [productsPageData, filterData, allMorphs] = await Promise.all([
+    getAllProductsPageData(filters),
     getShopFilterData(),
     getStructuredMorphs(),
   ]);
+  const currentPage = Math.max(
+    1,
+    Number(Array.isArray(rawSearchParams.page) ? rawSearchParams.page[0] : rawSearchParams.page) || 1
+  );
 
   return (
     <Suspense
@@ -42,9 +48,14 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       }
     >
       <ShopView
-        products={products}
+        products={productsPageData.products}
         filterData={filterData}
         allMorphs={allMorphs}
+        pagination={{
+          currentPage,
+          totalCount: productsPageData.totalCount,
+          itemsPerPage: PUBLIC_PRODUCTS_PER_PAGE,
+        }}
       />
     </Suspense>
   );

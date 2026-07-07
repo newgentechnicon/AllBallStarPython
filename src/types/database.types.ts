@@ -272,6 +272,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_product_status_counts: {
+        Args: { p_farm_id: number }
+        Returns: {
+          status: string
+          total: number
+        }[]
+      }
       get_morphs_structured: {
         Args: Record<PropertyKey, never>
         Returns: Json

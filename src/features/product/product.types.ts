@@ -23,6 +23,11 @@ export interface ProductsPageData {
   statusCounts: { All: number; Available: number; 'On Hold': number };
 }
 
+export interface PublicProductsPageData {
+  products: ProductWithMorphs[];
+  totalCount: number;
+}
+
 // Type for detailed product data
 export type ProductDetail = Tables<'products'> & {
   farms: Pick<Tables<'farms'>,'id' | 'name' | 'logo_url'> | null;

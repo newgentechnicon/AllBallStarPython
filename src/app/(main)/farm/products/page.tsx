@@ -10,10 +10,11 @@ type FarmProductsPageProps = {
 };
 
 export default async function FarmProductsPage({ searchParams }: FarmProductsPageProps) {
+  const rawSearchParams = await searchParams;
 
-  const currentPage = (await searchParams)['page'] ?? '1';
-  const currentQuery = (await searchParams)['q'] ?? '';
-  const currentStatus = (await searchParams)['productStatus'] ?? 'All';
+  const currentPage = rawSearchParams['page'] ?? '1';
+  const currentQuery = rawSearchParams['q'] ?? '';
+  const currentStatus = rawSearchParams['productStatus'] ?? 'All';
 
   const pageData = await getProductsPageData({
     page: currentPage,

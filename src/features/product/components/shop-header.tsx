@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FilterSheet } from "./FilterSheet";
+import dynamic from "next/dynamic";
 import { MorphCategory } from "./morph-selector";
-import Link from "next/link";
 import { SearchBox } from "./search-box";
+
+const FilterSheet = dynamic(
+  () => import("./FilterSheet").then((module) => module.FilterSheet),
+  { ssr: false }
+);
 
 const FilterIcon = () => (
   <svg
@@ -47,9 +51,10 @@ export function ShopHeader({ totalItems, filterData, allMorphs }: ShopHeaderProp
           <p className="text-sm text-gray-600">
             {totalItems.toLocaleString()} items
           </p>
-          <Link
+          <button
+            type="button"
             className="items-center gap-x-2 rounded-lg border border-gray-300 bg-[#1F2937] px-4 py-2 shadow-sm"
-            onClick={() => setIsFilterOpen(true)} href={""}>
+            onClick={() => setIsFilterOpen(true)}>
             
             <p className="inline-flex text-sm font-medium text-white gap-x-2 ">
               <FilterIcon /> Filter
@@ -58,7 +63,7 @@ export function ShopHeader({ totalItems, filterData, allMorphs }: ShopHeaderProp
             <span className="ml-1.5 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700">
               0
             </span>
-          </Link>
+          </button>
         </div>
       </div>
       <FilterSheet
