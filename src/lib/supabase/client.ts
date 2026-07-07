@@ -1,10 +1,9 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from '@/lib/database.types'
+import { getSupabaseEnv } from './env'
 
-// สร้าง Supabase client สำหรับฝั่ง Client (Browser)
 export function createClient() {
-  // ใช้ createBrowserClient สำหรับ Client Components
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const { supabaseUrl, supabaseKey } = getSupabaseEnv()
+
+  return createBrowserClient<Database>(supabaseUrl, supabaseKey)
 }

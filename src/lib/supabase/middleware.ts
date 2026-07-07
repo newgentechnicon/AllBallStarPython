@@ -1,45 +1,65 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
+import type { Database } from '@/lib/database.types'
+import { getSupabaseEnv } from './env'
+
+const protectedRoutes = ['/farm']
+const authRoutes = ['/login']
+
+function isRoute(pathname: string, routes: string[]) {
+  return routes.some((route) => pathname === route || pathname.startsWith(`${route}/`))
+}
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({
+  const { supabaseUrl, supabaseKey } = getSupabaseEnv()
+  const pathname = request.nextUrl.pathname
+
+  let supabaseResponse = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  const supabase = createServerClient<Database>(
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value)
+          })
+
+          supabaseResponse = NextResponse.next({
             request: {
               headers: request.headers,
             },
           })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options)
           })
-          response.cookies.set({ name, value: '', ...options })
         },
       },
     }
   )
 
-  // Refreshing the session will update the cookie for the client
-  await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getClaims()
+  const isAuthenticated = !error && !!data?.claims
 
-  return response
+  if (isRoute(pathname, protectedRoutes) && !isAuthenticated) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    redirectUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  if (isRoute(pathname, authRoutes) && isAuthenticated) {
+    return NextResponse.redirect(new URL('/farm', request.url))
+  }
+
+  return supabaseResponse
 }

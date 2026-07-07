@@ -22,6 +22,7 @@ export async function login(
 
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
+  const next = formData.get('next') as string | null;
 
   if (!email) {
     return { errors: { email: 'Email is required.' } };
@@ -42,7 +43,7 @@ export async function login(
   }
   
   revalidatePath('/', 'layout')
-  redirect('/farm')
+  redirect(next?.startsWith('/') && !next.startsWith('//') ? next : '/farm')
 }
 
 export async function updatePasswordAction(
