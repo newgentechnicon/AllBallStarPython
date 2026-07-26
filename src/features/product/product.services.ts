@@ -1,5 +1,8 @@
 import "server-only";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseEnv } from "@/lib/supabase/env";
+import type { Database } from "@/lib/database.types";
 import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import type { ProductsPageData, ProductWithMorphs, PublicProductsPageData } from "./product.types";
@@ -21,6 +24,17 @@ interface ProductFilters {
 export const PUBLIC_PRODUCTS_PER_PAGE = 24;
 const SHOP_FILTER_DATA_TAG = "shop-filter-data";
 const MORPH_FILTER_DATA_TAG = "morph-filter-data";
+
+function createCachedPublicClient() {
+  const { supabaseUrl, supabaseKey } = getSupabaseEnv();
+
+  return createSupabaseClient<Database>(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
 
 /**
  * ดึงข้อมูลทั้งหมดที่จำเป็นสำหรับหน้าแสดงรายการสินค้า
@@ -162,7 +176,7 @@ export async function getProductById(
  */
 const getCachedStructuredMorphs = unstable_cache(
   async (): Promise<MorphCategory[]> => {
-  const supabase = await createClient();
+  const supabase = createCachedPublicClient();
   const { data, error } = await supabase.rpc("get_morphs_structured");
   if (error) {
     console.error("Error fetching structured morphs:", error);
@@ -299,7 +313,7 @@ export async function getAllProductsPageData(
  */
 const getCachedShopFilterData = unstable_cache(
   async () => {
-  const supabase = await createClient();
+  const supabase = createCachedPublicClient();
 
   // Fetch distinct breeders (farms)
   const { data: breeders, error: breedersError } = await supabase
