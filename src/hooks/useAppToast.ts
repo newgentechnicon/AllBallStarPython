@@ -15,7 +15,7 @@ type ToastifyInstance = ReturnType<typeof Toastify>;
 const createToastNode = (message: string, type: 'success' | 'error', toast: ToastifyInstance) => {
     const toastNode = document.createElement('div');
     
-    const iconSrc = type === 'success' ? '/images/check-icon.png' : '/images/farm-7.svg';
+    const iconSrc = type === 'success' ? '/images/check-icon.png' : '/images/x-icon.png';
 
     // ✅ ใช้ Markup และคลาสจาก Preline UI
     toastNode.className = "max-w-xs bg-teal-500 rounded-xl shadow-lg dark:bg-neutral-800 dark:border-neutral-700";
