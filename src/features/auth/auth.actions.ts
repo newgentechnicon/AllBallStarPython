@@ -2,8 +2,9 @@
 
 import { z } from 'zod';
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import type { LoginFormState, ChangePasswordState } from './auth.types';
+import type { LoginFormState, ChangePasswordState, ForgotPasswordState } from './auth.types';
 import { revalidatePath } from 'next/cache'
 
 const passwordSchema = z.object({
@@ -12,6 +13,10 @@ const passwordSchema = z.object({
 }).refine(data => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'], // ระบุ field ที่จะให้แสดง error
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.email('Please enter a valid email address.'),
 });
 
 export async function login(
@@ -44,6 +49,54 @@ export async function login(
   
   revalidatePath('/', 'layout')
   redirect(next?.startsWith('/') && !next.startsWith('//') ? next : '/farm')
+}
+
+export async function requestPasswordResetAction(
+  prevState: ForgotPasswordState,
+  formData: FormData
+): Promise<ForgotPasswordState> {
+  const validatedFields = forgotPasswordSchema.safeParse({
+    email: formData.get('email'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      email: String(formData.get('email') ?? ''),
+    };
+  }
+
+  const requestHeaders = await headers();
+  const origin = requestHeaders.get('origin');
+
+  if (!origin) {
+    return {
+      errors: { _form: 'Unable to create a password reset link. Please try again.' },
+      email: validatedFields.data.email,
+    };
+  }
+
+  const callbackUrl = new URL('/auth/callback', origin);
+  callbackUrl.searchParams.set('next', '/reset-password');
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    validatedFields.data.email,
+    { redirectTo: callbackUrl.toString() }
+  );
+
+  if (error) {
+    return {
+      errors: { _form: 'Unable to send the password reset email. Please try again later.' },
+      email: validatedFields.data.email,
+    };
+  }
+
+  return {
+    errors: {},
+    success: true,
+    message: 'If an account exists for this email, a password reset link has been sent.',
+  };
 }
 
 export async function updatePasswordAction(

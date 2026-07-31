@@ -6,6 +6,16 @@ export interface LoginFormState {
   };
 }
 
+export interface ForgotPasswordState {
+  errors: {
+    email?: string[];
+    _form?: string;
+  };
+  email?: string;
+  success?: boolean;
+  message?: string;
+}
+
 export interface ChangePasswordState {
   errors: {
     newPassword?: string[];

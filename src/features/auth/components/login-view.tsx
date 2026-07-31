@@ -1,13 +1,20 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useActionState } from 'react';
 import { login } from '@/features/auth/auth.actions';
 import type { LoginFormState } from '@/features/auth/auth.types';
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from '@/components/ui/PasswordInput';
 
-export function LoginView({ next }: { next?: string }) {
+interface LoginViewProps {
+  next?: string;
+  status?: string;
+  error?: string;
+}
+
+export function LoginView({ next, status, error }: LoginViewProps) {
   const initialState: LoginFormState = { errors: {} };
   const [formState, formAction] = useActionState(login, initialState);
 
@@ -67,8 +74,28 @@ export function LoginView({ next }: { next?: string }) {
                 {formState.errors.password && (
                   <p className="mt-2 text-sm text-red-600">{formState.errors.password}</p>
                 )}
+                <div className="mt-2 text-right">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm font-medium text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-white"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
             </div>
+
+            {status === 'password_updated' && (
+              <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700" role="status">
+                Password updated successfully. Sign in with your new password.
+              </div>
+            )}
+
+            {error === 'recovery_link_invalid' && (
+              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
+                This password reset link is invalid or has expired. Request a new one.
+              </div>
+            )}
             
             {formState.errors._form && (
               <div className="mt-2 text-sm text-red-600" role="alert">
