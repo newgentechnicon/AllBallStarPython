@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getProductsPageData, shopFilterDataTag } from './product.services';
 import type { CreateProductState, EditProductState } from './product.types';
@@ -78,7 +78,7 @@ export async function updateProductStatus(productId: number, newStatus: string) 
   }
 
   revalidatePath('/farm/products');
-  revalidateTag(shopFilterDataTag);
+  updateTag(shopFilterDataTag);
   return { success: true, message: 'Status updated successfully.' };
 }
 
@@ -103,7 +103,7 @@ export async function softDeleteProduct(productId: number) {
   }
 
   revalidatePath('/farm/products');
-  revalidateTag(shopFilterDataTag);
+  updateTag(shopFilterDataTag);
   return { success: true, message: 'Product deleted successfully.' };
 }
 
@@ -195,7 +195,7 @@ export async function createProductAction(prevState: CreateProductState, formDat
   }
 
   revalidatePath('/farm/products');
-  revalidateTag(shopFilterDataTag);
+  updateTag(shopFilterDataTag);
   redirect('/farm/products');
 }
 
@@ -298,6 +298,6 @@ export async function updateProductAction(prevState: EditProductState, formData:
   }
 
   revalidatePath(`/farm/products/${id}`);
-  revalidateTag(shopFilterDataTag);
+  updateTag(shopFilterDataTag);
   redirect(`/farm/products/${id}`);
 }

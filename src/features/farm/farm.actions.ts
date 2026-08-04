@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { shopFilterDataTag } from '@/features/product/product.services';
 import type { CreateFarmState, EditFarmState } from './farm.types';
 
@@ -66,7 +66,7 @@ export async function createFarmAction(prevState: CreateFarmState, formData: For
   }
 
   revalidatePath('/farm');
-  revalidateTag(shopFilterDataTag);
+  updateTag(shopFilterDataTag);
   return { success: true, message: 'Create farm successfully', errors: {} };
 }
 
@@ -110,6 +110,6 @@ export async function updateFarmAction(prevState: EditFarmState, formData: FormD
   }
 
   revalidatePath('/farm');
-  revalidateTag(shopFilterDataTag);
+  updateTag(shopFilterDataTag);
   return { success: true, message: 'Update farm successfully', errors: {} };
 }

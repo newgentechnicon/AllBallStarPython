@@ -41,6 +41,9 @@ export function FilterSheet({
     productStatus: [] as string[],
     morphs: [] as string[],
   });
+  const [selectedMorphsUI, setSelectedMorphs] = useState<SingleSelectedMorph[]>(
+    []
+  );
 
   useEffect(() => {
     const initialFilters = {
@@ -102,10 +105,6 @@ export function FilterSheet({
     router.push(`${pathname}?${params.toString()}`);
     onClose();
   };
-
-  const [selectedMorphsUI, setSelectedMorphs] = useState<SingleSelectedMorph[]>(
-    []
-  );
 
   const handleAddMorph = (morph: Morph) => {
     if (!selectedMorphsUI.find((m) => m.id === morph.id)) {
