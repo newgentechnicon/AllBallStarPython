@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/server'
 import type { LoginFormState, ChangePasswordState, ForgotPasswordState } from './auth.types';
 import { revalidatePath } from 'next/cache'
 
+const PRODUCTION_SITE_URL = 'https://www.allstarballpython.com/';
+
 const passwordSchema = z.object({
   newPassword: z.string().min(6, 'Password must be at least 6 characters.'),
   confirmPassword: z.string(),
@@ -68,15 +70,18 @@ export async function requestPasswordResetAction(
 
   const requestHeaders = await headers();
   const origin = requestHeaders.get('origin');
+  const siteUrl = process.env.NODE_ENV === 'production'
+    ? PRODUCTION_SITE_URL
+    : origin;
 
-  if (!origin) {
+  if (!siteUrl) {
     return {
       errors: { _form: 'Unable to create a password reset link. Please try again.' },
       email: validatedFields.data.email,
     };
   }
 
-  const callbackUrl = new URL('/auth/callback', origin);
+  const callbackUrl = new URL('/auth/callback', siteUrl);
   callbackUrl.searchParams.set('next', '/reset-password');
 
   const supabase = await createClient();
