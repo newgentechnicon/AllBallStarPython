@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   MorphSelector,
   SelectedMorph as SingleSelectedMorph,
@@ -31,6 +31,8 @@ export function FilterSheet({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [isApplying, setIsApplying] = useState(false);
 
   const [filters, setFilters] = useState({
     minPrice: "",
@@ -90,6 +92,13 @@ export function FilterSheet({
     setSelectedMorphs(initialMorphs);
   }, [searchParams, allMorphs]);
 
+  useEffect(() => {
+    if (isApplying && !isPending) {
+      setIsApplying(false);
+      onClose();
+    }
+  }, [isApplying, isPending, onClose]);
+
   const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams);
     Object.keys(filters).forEach((key) => {
@@ -102,8 +111,11 @@ export function FilterSheet({
         params.set(key, value);
       }
     });
-    router.push(`${pathname}?${params.toString()}`);
-    onClose();
+    params.set("page", "1");
+    setIsApplying(true);
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   };
 
   const handleAddMorph = (morph: Morph) => {
@@ -143,7 +155,9 @@ export function FilterSheet({
       setSelectedMorphs((prev) => [...prev, { ...morph, color_hex }]);
       setFilters((prev) => ({
         ...prev,
-        morphs: [...prev.morphs, String(morph.name)],
+        // Use the stable database id in the URL. Morph names can contain
+        // PostgREST-reserved characters such as parentheses and commas.
+        morphs: [...prev.morphs, String(morph.id)],
       }));
     }
   };
@@ -152,7 +166,12 @@ export function FilterSheet({
     setSelectedMorphs((prev) => prev.filter((m) => m.id !== morphToRemove.id));
     setFilters((prev) => ({
       ...prev,
-      morphs: prev.morphs.filter((name) => name !== morphToRemove.name),
+      // Also remove the name form for backwards compatibility with old URLs.
+      morphs: prev.morphs.filter(
+        (identifier) =>
+          identifier !== String(morphToRemove.id) &&
+          identifier !== morphToRemove.name
+      ),
     }));
   };
 
@@ -179,11 +198,15 @@ export function FilterSheet({
     // onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !isApplying) return null;
 
   return (
-    // Overlay
-    <div className="fixed inset-0 bg-black/50 z-99" onClick={onClose}>
+    <>
+    {/* Overlay */}
+    <div
+      className="fixed inset-0 bg-black/50 z-99"
+      onClick={isApplying ? undefined : onClose}
+    >
       {/* Slide-over Panel */}
       <div
         className="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-lg z-50 p-6 flex flex-col"
@@ -429,19 +452,43 @@ export function FilterSheet({
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4 mt-auto pt-6">
           <button
+            type="button"
             className="cursor-pointer py-3 px-4 min-w-[160px] inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-neutral-500 !text-neutral-500 hover:border-neutral-800 hover:text-neutral-800 focus:outline-none focus:border-neutral-800 focus:text-neutral-800 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-400 dark:!text-neutral-400 dark:hover:text-neutral-300 dark:hover:border-neutral-300"
             onClick={handleResetFilters}
+            disabled={isApplying}
           >
             Reset
           </button>
           <button
+            type="button"
             className="cursor-pointer py-3 px-4 min-w-[160px] inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-neutral-500 !text-white hover:bg-neutral-600 focus:outline-none focus:bg-neutral-600 disabled:opacity-50 disabled:pointer-events-none dark:!text-white"
             onClick={handleApplyFilters}
+            disabled={isApplying}
           >
-            Done
+            {isApplying ? (
+              <>
+                <span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                Loading...
+              </>
+            ) : (
+              "Done"
+            )}
           </button>
         </div>
       </div>
     </div>
+    {isApplying && (
+      <div
+        className="fixed inset-0 z-100 flex items-center justify-center bg-black/30 backdrop-blur-[1px]"
+        role="status"
+        aria-label="Applying filters"
+      >
+        <div className="flex items-center gap-3 rounded-xl bg-white px-5 py-4 text-sm font-medium text-gray-800 shadow-xl">
+          <span className="size-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-800" />
+          Loading products...
+        </div>
+      </div>
+    )}
+    </>
   );
 }
