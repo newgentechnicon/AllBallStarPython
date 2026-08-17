@@ -144,7 +144,9 @@ export function FilterSheet({
       setSelectedMorphs((prev) => [...prev, { ...morph, color_hex }]);
       setFilters((prev) => ({
         ...prev,
-        morphs: [...prev.morphs, String(morph.name)],
+        // Use the stable database id in the URL. Morph names can contain
+        // PostgREST-reserved characters such as parentheses and commas.
+        morphs: [...prev.morphs, String(morph.id)],
       }));
     }
   };
@@ -153,7 +155,12 @@ export function FilterSheet({
     setSelectedMorphs((prev) => prev.filter((m) => m.id !== morphToRemove.id));
     setFilters((prev) => ({
       ...prev,
-      morphs: prev.morphs.filter((name) => name !== morphToRemove.name),
+      // Also remove the name form for backwards compatibility with old URLs.
+      morphs: prev.morphs.filter(
+        (identifier) =>
+          identifier !== String(morphToRemove.id) &&
+          identifier !== morphToRemove.name
+      ),
     }));
   };
 

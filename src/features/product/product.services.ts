@@ -270,15 +270,29 @@ export async function getAllProductsPageData(
       .map((m) => (isNaN(Number(m)) ? String(m) : null))
       .filter((name): name is string => name !== null);
 
-    if (morphIds.length) {
-      query = query.in("product_morphs.morph_id", morphIds);
+    // Older filter URLs stored morph names. Resolve those names to ids first
+    // instead of interpolating them into PostgREST's logical filter syntax,
+    // where characters such as parentheses and commas have special meaning.
+    if (morphNames.length) {
+      const { data: legacyMorphs, error: legacyMorphsError } = await supabase
+        .from("morphs")
+        .select("id")
+        .in("name", morphNames);
+
+      if (legacyMorphsError) {
+        console.error("Error resolving legacy morph filters:", legacyMorphsError);
+      } else {
+        morphIds.push(...legacyMorphs.map((morph) => morph.id));
+      }
     }
 
-    if (morphNames.length) {
-      query = query.or(
-        morphNames.map((name) => `name.ilike.%${name}%`).join(","),
-        { foreignTable: "product_morphs.morphs" }
-      );
+    const uniqueMorphIds = [...new Set(morphIds)];
+    if (uniqueMorphIds.length) {
+      query = query.in("product_morphs.morph_id", uniqueMorphIds);
+    } else {
+      // A supplied morph filter that cannot be resolved must not silently
+      // return every product.
+      query = query.in("product_morphs.morph_id", [-1]);
     }
   }
 
